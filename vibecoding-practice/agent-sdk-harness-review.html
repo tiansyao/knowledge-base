@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>最近 Agent 发展的一个主线</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --paper: #ffffff;
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #d5d9df;
+      --accent: #1f4e79;
+      --accent-soft: #eef4f9;
+      --quote: #f7f9fb;
+      --code: #f3f5f7;
+      --shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+      line-height: 1.72;
+    }
+
+    .page {
+      width: min(1120px, calc(100vw - 40px));
+      margin: 28px auto 64px;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .toc {
+      position: sticky;
+      top: 24px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px 18px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc .eyebrow {
+      margin: 0 0 8px;
+      font: 700 11px/1.4 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .toc h2 {
+      margin: 0 0 14px;
+      font: 700 22px/1.2 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .toc ol,
+    .toc ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toc li {
+      margin: 8px 0;
+    }
+
+    .toc a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--accent);
+    }
+
+    article {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 42px 52px 30px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .hero .eyebrow {
+      margin: 0 0 12px;
+      font: 700 11px/1.4 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .hero h1 {
+      margin: 0 0 16px;
+      font: 800 clamp(34px, 4.2vw, 48px)/1.08 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -0.025em;
+      max-width: 16ch;
+    }
+
+    .hero .lede {
+      margin: 0;
+      max-width: 44em;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    .hero .pillbox {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(31, 78, 121, 0.12);
+      color: var(--ink);
+      font: 600 13px/1.3 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .content {
+      padding: 38px 52px 52px;
+    }
+
+    h2 {
+      margin: 40px 0 14px;
+      font: 800 30px/1.2 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -0.02em;
+      scroll-margin-top: 28px;
+    }
+
+    h3 {
+      margin: 28px 0 10px;
+      font: 750 20px/1.3 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 14px 0;
+      font-size: 17px;
+    }
+
+    strong {
+      color: #111;
+    }
+
+    ul,
+    ol {
+      margin: 14px 0 14px 26px;
+      padding: 0;
+      font-size: 17px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    blockquote {
+      margin: 18px 0;
+      padding: 16px 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--quote);
+      color: #223042;
+      border-radius: 0 14px 14px 0;
+      font-size: 17px;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      background: rgba(30, 76, 122, 0.07);
+      padding: 0.12em 0.36em;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 18px 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid #dfe5eb;
+      border-radius: 18px;
+      line-height: 1.65;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    .summary-card {
+      margin: 20px 0 30px;
+      padding: 18px 20px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(31, 78, 121, 0.14);
+    }
+
+    .summary-card p {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .sources h3 {
+      margin-top: 34px;
+    }
+
+    .sources ul {
+      list-style: none;
+      margin-left: 0;
+    }
+
+    .sources li {
+      margin: 10px 0;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sources li:last-child {
+      border-bottom: none;
+    }
+
+    .sources a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .sources a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-note {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    @media (max-width: 960px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+
+      .hero,
+      .content {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        width: auto;
+        margin: 0;
+        display: block;
+      }
+
+      .toc {
+        display: none;
+      }
+
+      article {
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+      }
+
+      .hero,
+      .content {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="toc">
+      <p class="eyebrow">Agent Review</p>
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#openai">OpenAI 的做法</a></li>
+        <li><a href="#google">Google 的做法</a></li>
+        <li><a href="#anthropic">Anthropic 的重构</a></li>
+        <li><a href="#timeline">从时间线上看发展</a></li>
+        <li><a href="#takeaways">Takeaways 和落地措施</a></li>
+        <li><a href="#conclusion">结论</a></li>
+        <li><a href="#sources">参考材料</a></li>
+      </ol>
+    </aside>
+
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Official Review · 2026-04-19</p>
+        <h1>长程任务与复杂任务下的 Agent 结构</h1>
+        <p class="lede">本文基于 Anthropic、OpenAI、Google 的官方英文文档与工程文章，讨论一个核心问题：当任务长度、开放性和执行复杂度持续上升时，agent 系统应如何组织其能力、状态与控制流。</p>
+        <p class="lede">作者：tianshun yao &amp; gpt 5.4</p>
+        <div class="pillbox">
+          <span class="pill">OpenAI: primitives</span>
+          <span class="pill">Google: runtime framework</span>
+          <span class="pill">Anthropic: harness refactor</span>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="summary-card">
+          <p>本文的中心判断是：面对长程任务和复杂任务，agent 系统需要完成三种分离，即能力与角色分离、context window 与 session 分离、计划与执行分离。</p>
+        </div>
+
+        <p>我认为主线只有三条：</p>
+        <ol>
+          <li><strong>能力和角色分开</strong>。稳定抽象不是 <code>writer agent</code>、<code>research agent</code> 这类身份，而是按需加载的 skill、tool、module。</li>
+          <li><strong>context window 和 session 分开</strong>。模型当前看到的 token 只是工作集；真正的系统记忆应该是 session、event log、state、memory。</li>
+          <li><strong>计划和执行分开</strong>。持续规划的是一个决策中枢；真正执行的是一组可替换的 hands/executors，比如 sandbox、browser、MCP server、subagent。</li>
+        </ol>
+
+        <p>这三条不是泛化式判断，而是三家官方 SDK 与工程文章在过去一年里逐步收敛出的运行时结构。只是三家的落点不同：OpenAI 更像一组轻量 primitives，Google 更像一套框架化 runtime，Anthropic 则更接近对 agent harness 的接口级重构。</p>
+
+        <h2 id="openai">1. OpenAI 的做法</h2>
+        <p>OpenAI 的特点不在于提出一套高度理论化的框架，而在于将 agent 系统拆成一组足够轻、足够可组合的 primitives：<code>Agent</code>、<code>Runner</code>、<code>tools</code>、<code>handoffs</code>、<code>sessions</code>、<code>context</code>、<code>guardrails</code>、<code>tracing</code>。整体上，它更接近一个 code-first orchestration layer。</p>
+
+        <h3>1.0 一条明显的分叉</h3>
+        <p>如果只看 OpenAI 的公开材料，最值得注意的不是某一个单点功能，而是它在 2024-2025 年间逐步形成的两条路径。</p>
+        <p>第一条路径面向开发者与企业，核心是 <code>Swarm → Agents SDK → AgentKit</code>。第二条路径面向消费者产品，核心是 <code>ChatGPT agent</code> 所代表的 unified agentic system。这两条路径共享底层能力，但架构叙事并不相同。</p>
+
+        <p>2024 年 10 月，OpenAI 发布 <code>Swarm</code>。它在官方 README 里把自己定义为：</p>
+        <blockquote>“Swarm (experimental, educational)”</blockquote>
+        <p>同时明确写出：</p>
+        <blockquote>“It accomplishes this through two primitive abstractions: <code>Agent</code>s and handoffs.”</blockquote>
+        <p>这说明 Swarm 的出发点非常清楚：先把多 agent 协作压缩成两个最小原语，即 <code>Agent</code> 与 <code>Handoff</code>。这也构成了其后 OpenAI 多 agent 叙事的起点。</p>
+
+        <pre><code class="language-python">from swarm import Swarm, Agent
+
+client = Swarm()
+
+def transfer_to_agent_b():
+    return agent_b
+
+agent_a = Agent(
+    name="Agent A",
+    instructions="You are a helpful agent.",
+    functions=[transfer_to_agent_b],
+)
+
+agent_b = Agent(
+    name="Agent B",
+    instructions="Only speak in Haikus.",
+)
+
+response = client.run(
+    agent=agent_a,
+    messages=[{"role": "user", "content": "I want to talk to agent B."}],
+)</code></pre>
+
+        <p>Swarm README 还把这套模式的执行循环写得很明白：</p>
+        <blockquote><code>client.run()</code> 的核心 loop 是：get completion、execute tool calls、switch agent、update context variables、if no new function calls, return。</blockquote>
+        <p>也就是说，Swarm 的本质不是“很多智能体一起聊天”，而是一个围绕 handoff 的多步控制循环。</p>
+
+        <p>到了 2025 年 3 月，OpenAI 在 Swarm README 中正式写明：</p>
+        <blockquote>“Swarm is now replaced by the OpenAI Agents SDK, which is a production-ready evolution of Swarm.”</blockquote>
+        <p>这里最关键的不是“升级了一个 SDK”，而是：OpenAI 自己将 Agents SDK 定位成 Swarm 的生产版继任者。也就是说，<code>Agent</code>、<code>Handoff</code>、<code>Guardrails</code> 这套语义并没有被推翻，而是被生产化、补齐了运行时控制、状态、Tracing 和 Guardrails。</p>
+
+        <p>到了 2025 年 10 月，这条开发者产品线又被往上盖了一层 <code>AgentKit</code>。OpenAI 官方原文是：</p>
+        <blockquote>“Agent Builder: a visual canvas for creating and versioning multi-agent workflows”</blockquote>
+        <p>同时配套了 <code>Connector Registry</code>、<code>ChatKit</code>、新的 Evals 能力。也就是说，OpenAI 面向开发者与企业持续强调的，仍然是：<strong>可以用这套 primitives 与工具链构建 composable multi-agent workflows。</strong></p>
+
+        <p>但另一条线完全不同。2025 年 7 月 17 日，OpenAI 发布 <code>ChatGPT agent</code>，官方最关键的一句是：</p>
+        <blockquote>“At the core of this new capability is a unified agentic system.”</blockquote>
+        <p>它后面紧接着解释：</p>
+        <blockquote>“It brings together three strengths of earlier breakthroughs: Operator’s ability to interact with websites, deep research’s skill in synthesizing information, and ChatGPT’s intelligence and conversational fluency.”</blockquote>
+        <p>更重要的是，OpenAI 没有把它描述成“三个 agent 编排成一个团队”，而是紧接着写：</p>
+        <blockquote>“ChatGPT carries out these tasks using its own virtual computer, fluidly shifting between reasoning and action...”</blockquote>
+        <p>并补充其工具面是：</p>
+        <blockquote>“a visual browser ... a text-based browser ... a terminal, and direct API access”</blockquote>
+
+        <p>这组表述的信号非常强。面向开发者，OpenAI 持续销售的是多 agent orchestration；面向消费者产品，它真正上线的是 unified single-agent-with-tools。这里体现的不是文案差异，而是 OpenAI 对不同架构下注程度的差异。</p>
+
+        <h3>1.1 能力和角色分开</h3>
+        <p>OpenAI 官方实践指南的默认出发点很保守，也很对：</p>
+        <blockquote>“maximize a single agent’s capabilities first”</blockquote>
+        <p>这句话的重要性在于，它重新定义了设计顺序。不是先将系统拆成许多固定角色，再分别配置工具；而是先扩展单个 agent 的能力面，再在必要时引入多 agent。</p>
+        <p><code>Tools</code> 和 <code>Handoffs</code> 文档把这种思路进一步做实了。<code>Handoffs</code> 文档直接说：</p>
+        <blockquote>“Handoffs are represented as tools to the LLM.”</blockquote>
+        <p>这意味着在 OpenAI 的设计里，“另一个 agent”本身就可以是一种工具表面。<code>Agent.as_tool()</code> 又把这个意思推得更彻底：specialist 不一定要成为新的会话主体，它完全可以只是被 manager 调用的一个能力模块。</p>
+
+        <p>官方文档甚至把 handoff 与 agent-as-tool 的差别写得非常直白：</p>
+        <blockquote>“If the specialist should stay behind the original agent, use agents as tools instead.”</blockquote>
+        <p>这句话非常关键。它说明 OpenAI 自己也在区分两种模式：</p>
+        <ul>
+          <li>specialist 接管会话：用 handoff</li>
+          <li>specialist 留在主 agent 后面：用 agent-as-tool</li>
+        </ul>
+        <p>这正是“能力和角色分开”的工程版本。specialist 首先是能力载体，其次才可能是会话主体。</p>
+
+        <pre><code class="language-python">manager_agent = Agent(
+    name="manager_agent",
+    instructions="Use tools to translate.",
+    tools=[
+        spanish_agent.as_tool(
+            tool_name="translate_to_spanish",
+            tool_description="Translate to Spanish",
+        ),
+        french_agent.as_tool(
+            tool_name="translate_to_french",
+            tool_description="Translate to French",
+        ),
+    ],
+)</code></pre>
+
+        <p>对应的 handoff 版本，官方示例则是：</p>
+
+        <pre><code class="language-typescript">import { Agent, handoff } from '@openai/agents';
+
+const billingAgent = new Agent({ name: 'Billing agent' });
+const refundAgent = new Agent({ name: 'Refund agent' });
+
+const triageAgent = Agent.create({
+  name: 'Triage agent',
+  handoffs: [billingAgent, handoff(refundAgent)],
+});</code></pre>
+
+        <p>因此，OpenAI 在这里给出的核心判断是：<strong>优先将能力组织为 tool surface；只有当 specialist 需要接管后续交互时，才提升为 handoff destination。</strong></p>
+
+        <h3>1.2 context window 和 session 分开</h3>
+        <p>OpenAI 在状态问题上的重要贡献，是它明确区分了两类上下文。<code>Context management</code> 文档一开头就说：</p>
+        <blockquote>“Context is an overloaded term.”</blockquote>
+        <p>然后它立刻把 context 分成两类：代码本地可见的 local context，和模型可见的 agent/LLM context。最关键的一句是：</p>
+        <blockquote>“The context object is not sent to the LLM.”</blockquote>
+        <p>这意味着 OpenAI 已经明确把“应用态状态”和“模型态上下文”拆开。再往下，<code>Sessions</code> 和 <code>Running agents</code> 文档又给出了四种跨轮次状态策略：<code>to_input_list()</code>、<code>session</code>、<code>conversation_id</code>、<code>previous_response_id</code>。</p>
+
+        <pre><code class="language-python">session = SQLiteSession("conversation_123")
+
+result = await Runner.run(
+    agent,
+    "What city is the Golden Gate Bridge in?",
+    session=session,
+)</code></pre>
+
+        <p>这里的核心不是“提供唯一正确的 session 架构”，而是：<strong>先把状态承载层显式拆出，再把架构选择权交给开发者。</strong> 这带来了灵活性，也意味着更多工程判断需要由使用者自行完成。</p>
+        <p>值得注意的是，OpenAI 在消费者产品这条线上采取了另一种实现方式。<code>ChatGPT agent</code> 的官方描述不是多 session handoff 网络，而是一个 unified agent 在自己的 virtual computer 中跨工具保持连续工作流。这说明 OpenAI 在产品侧更重视统一执行上下文，而不是显式暴露多 agent session graph。</p>
+
+        <h3>1.3 计划和执行分开</h3>
+        <p>OpenAI 在这一点上的表达最直接地体现在 <code>Agent orchestration</code> 文档里。它把 orchestration 明确拆成两种：</p>
+        <blockquote>“Orchestrating via LLM”</blockquote>
+        <blockquote>“Orchestrating via code”</blockquote>
+        <p>这两句的含义是：规划层不必始终由模型承担。开发者可以让模型决定下一步，也可以让代码层显式控制流程。</p>
+        <p>再结合 <code>as_tool()</code> 和 <code>handoff</code> 的区别，OpenAI 给出了一套很清楚的控制权模型：</p>
+        <ul>
+          <li><code>as_tool()</code>：manager 保留规划权，specialist 只是执行一个有界子任务。</li>
+          <li><code>handoff</code>：控制权切到新的 specialist。</li>
+        </ul>
+
+        <pre><code class="language-python">triage_agent = Agent(
+    name="triage_agent",
+    handoffs=[billing_agent, refund_agent],
+)</code></pre>
+
+        <p>如果把这条线和 <code>ChatGPT agent</code> 放在一起看，OpenAI 的做法实际上是一种分叉：</p>
+        <ul>
+          <li>面对开发者与企业：主打 handoff、多 agent orchestration、visual builder。</li>
+          <li>面对消费者产品：主打 unified agentic system，即单一 agent 带一整套 tools。</li>
+        </ul>
+        <p>因此，OpenAI 的 harness engineering 可以概括为：<strong>对外提供轻量 primitives 和多 agent 组合能力；对内产品侧则更倾向 unified single-agent-with-tools。</strong></p>
+
+        <h3>小结</h3>
+        <p>OpenAI 的路线最适合这样一种团队：已经具备应用代码、服务边界、权限体系和状态存储，只需要一个干净的 agent orchestration 中间层。它的强项是轻、通用、组合性强；它的代价是很多工程判断仍需由使用方自行完成。</p>
+
+        <h2 id="google">2. Google 的做法</h2>
+        <p>Google 在这件事上的姿态最有张力。它一方面用 ADK 提供了一套非常完整、非常显式的 agent runtime framework；另一方面，在 Jules、Gemini CLI 这些自家产品里，又逐步走向了统一 agent 配合不同执行模式的路线。</p>
+        <p>因此，Google 不是简单地站在“多 agent”或“单 agent”任一边，而是在公开框架层继续教授如何构建 hierarchical multi-agent，在产品层把重点转回到一个持续工作的 agent 如何接上不同执行环境。</p>
+
+        <h3>2.1 能力和角色分开</h3>
+        <p>如果只看 ADK 的教程与文档，Google 早期公开叙事是很典型的按角色划分。<code>Collaborative agents</code> 文档直接写：</p>
+        <blockquote>“a coordinator agent handles delegation of tasks to one or more subagents”</blockquote>
+        <p>官方多 agent 页面里常见的名字也确实是 <code>Coordinator</code>、<code>Greeter</code>、<code>TaskExecutor</code>、<code>BookingAgent</code> 这一路。也就是说，Google 最初给开发者的入口，是先定义角色，再定义层级，再用 <code>sub_agents</code> 与 <code>transfer_to_agent</code> 组织协作。</p>
+
+        <pre><code class="language-python">coordinator = LlmAgent(
+    name="Coordinator",
+    instruction="Delegate tasks to the right sub-agent.",
+    sub_agents=[research_agent, coding_agent, reviewer_agent],
+)</code></pre>
+
+        <p>但 Google 的框架并没有停在角色层。ADK 之后很快把 <code>Skills</code>、<code>Callbacks</code>、<code>Plugins</code>、<code>Tools</code> 做成了更稳定的能力层。<code>Skills for ADK agents</code> 将 skill 定义为：</p>
+        <blockquote>“self-contained unit of functionality”</blockquote>
+        <p>这比“researcher agent”“reviewer agent”更接近长期稳定抽象，因为它描述的是能力，而不是身份。</p>
+
+        <pre><code class="language-python">weather_skill = load_skill_from_dir(pathlib.Path("skills/weather_skill"))
+
+skill_toolset = SkillToolset(skills=[weather_skill])
+
+root_agent = Agent(
+    name="skill_user_agent",
+    model="gemini-flash-latest",
+    tools=[skill_toolset],
+)</code></pre>
+
+        <p>真正有意思的是 Google 自己做产品时的落点。Jules 官方定义自己是：</p>
+        <blockquote>“an asynchronous, agentic coding assistant”</blockquote>
+        <p>Gemini CLI 官方定义自己是：</p>
+        <blockquote>“an open-source AI agent that brings the power of Gemini directly into your terminal”</blockquote>
+        <p>这两者都不是“编剧 agent + 研究 agent + 测试 agent”的团队叙事。Google 自己的产品线，实际更接近一个统一 agent 叠加不同能力与不同工作模式。这个信号很重要：<strong>Google 公开框架仍有强角色味道，但产品侧已经在把重点从角色转回能力面和执行面。</strong></p>
+
+        <h3>2.2 context window 和 session 分开</h3>
+        <p>Google 在状态分层上最显式。<code>Introduction to Conversational Context: Session, State, and Memory</code> 一上来就把三层拆开：</p>
+        <blockquote><code>Session</code>: “chronological sequence of messages and actions”</blockquote>
+        <blockquote><code>State</code>: current conversation 内的数据</blockquote>
+        <blockquote><code>Memory</code>: cross-session searchable information</blockquote>
+        <p>这套拆法非常接近传统系统工程思维：<code>Session</code> 是事件流，<code>State</code> 是当前工作态，<code>Memory</code> 是长期可检索知识。</p>
+
+        <pre><code class="language-python">updated_session = await session_service.get_session(
+    app_name=app_name,
+    user_id=user_id,
+    session_id=session_id,
+)
+
+await memory_service.add_session_to_memory(session)</code></pre>
+
+        <p>Google 的重要性在于，它没有把“记忆”模糊地等同于 prompt history，也没有把“状态”压缩成一个未分层的大字典，而是直接在框架层给出 <code>Session / State / Memory</code> 三层对象。对长程任务来说，这比任何 prompt 技巧都更基础。</p>
+
+        <h3>2.3 计划和执行分开</h3>
+        <p>Google 在第三条上的公开表达也很明确，只是它使用的是 workflow/runtime 语言，而不是 brain/hands 语言。<code>Workflow Agents</code> 文档直接写：</p>
+        <blockquote>“designed purely for orchestrating the execution flow”</blockquote>
+        <p>并且强调这些 workflow agents：</p>
+        <blockquote>“operate based on predefined logic”</blockquote>
+        <p>以及：</p>
+        <blockquote>“not powered by an LLM”</blockquote>
+        <p>这意味着：<strong>流程控制本身不必交给模型。</strong> 顺序、并行、循环这些结构可以由 deterministic runtime 显式承担；LLM 负责 reasoning，workflow agent 负责 orchestration。</p>
+
+        <pre><code class="language-python">step1 = LlmAgent(name="Step1_Fetch", output_key="data")
+step2 = LlmAgent(name="Step2_Process", instruction="Process data from {data}.")
+
+pipeline = SequentialAgent(
+    name="MyPipeline",
+    sub_agents=[step1, step2],
+)</code></pre>
+
+        <p>但如果把 ADK 和 Google 自己的产品放在一起看，分野会更清楚。Jules 官方写它会：</p>
+        <blockquote>“clone your codebase into a secure Google Cloud virtual machine (VM)”</blockquote>
+        <p>并且：</p>
+        <blockquote>“operates asynchronously, allowing you to focus on other tasks while it works in the background”</blockquote>
+        <p>Gemini CLI 则被定义为一个直接在终端里工作的 agent，并且强调本地、直接、可扩展。两者的差别，首先不是职能角色，而是执行模式：一个在前台终端协作，一个在后台云端 VM 异步执行。</p>
+        <p>所以 Google 这条线的结论很明确：<strong>ADK 仍然保留了旧范式里的 hierarchical multi-agent 教学入口，但 Google 自己做产品时，已经更接近 unified agent 加 execution mode differentiation。</strong></p>
+
+        <h3>小结</h3>
+        <p>Google 的路线适合把 agent 当成长期基础设施来做的团队。它最强的是 runtime 分层足够显式；它最有启发的地方，则是官方框架与自家产品之间已经出现了方向性修正：角色化编排仍在，但真正稳定的抽象正在转向能力、状态与执行模式。</p>
+
+        <h2 id="anthropic">3. Anthropic 的重构</h2>
+        <p>Anthropic 的演进更彻底，也更自我批判。如果说 OpenAI 在做 primitives，Google 在做 framework，那么 Anthropic 在 2025 年下半年之后做的，已经更接近于：<strong>重构 agent harness 本身。</strong></p>
+        <p>关键不只是 <code>Claude Code SDK</code>，而是它围绕长程任务连续发布的一组工程文章：<code>How we built our multi-agent research system</code>、<code>Effective context engineering for AI agents</code>、<code>Equipping agents for the real world with Agent Skills</code>、<code>Scaling Managed Agents: Decoupling the brain from the hands</code>。这些材料连起来看，很像一条逐步剥离旧假设的重构线。</p>
+
+        <h3>3.1 能力和角色分开</h3>
+        <p>Anthropic 在 2025 年 6 月那篇 <code>How we built our multi-agent research system</code> 里，表面上还处于 lead agent + subagents 的阶段。但即便在那一版里，它对 subagent 的定义也已经不是“职业身份”，而是上下文与能力隔离单元。原文写得很清楚：</p>
+        <blockquote>“Each subagent also provides separation of concerns—distinct tools, prompts, and exploration trajectories”</blockquote>
+        <p>到 2025 年 9 月的 <code>Effective context engineering for AI agents</code>，这个判断被说得更明确：</p>
+        <blockquote>“This approach achieves a clear separation of concerns—the detailed search context remains isolated within sub-agents, while the lead agent focuses on synthesizing and analyzing the results.”</blockquote>
+        <p>这两句放在一起看，含义很明确：subagent 解决的是 context 分离问题，不是专业分工问题。它的价值不在于“扮演 citation specialist”，而在于把大量局部搜索与推演留在隔离上下文里，只把压缩后的结果交回主 agent。</p>
+        <p>这也是为什么 Anthropic 在同年 10 月推出 <code>Agent Skills</code> 时，方向会进一步从角色转向能力模块。官方把 skill 定义成一个目录加一份 <code>SKILL.md</code>，并强调：</p>
+        <blockquote>“At startup, the agent pre-loads the name and description of every installed skill into its system prompt.”</blockquote>
+        <blockquote>“This metadata is the first level of progressive disclosure”</blockquote>
+        <p>也就是说，agent 启动时只先知道每个 skill 的名称与描述；只有任务需要时，才把对应 skill 的正文、参考文件和脚本按需读入。这是很强的“能力而非角色”设计。</p>
+
+        <pre><code class="language-markdown">---
+name: pdf-form-filler
+description: Fill PDF forms and extract fields when document workflows appear
+---
+
+Use this skill when the task involves PDF form handling.</code></pre>
+
+        <p>Anthropic 在这里走得比另外两家更远。它不是在给每种任务预设一个 agent 身份，而是在把能力做成可组合、可按需披露、可与脚本捆绑的 skill 包。换句话说：<strong>角色开始退场，skill 成为更稳定的 runtime 抽象。</strong></p>
+
+        <h3>3.2 context window 和 session 分开</h3>
+        <p>Anthropic 在第二条上的表述是三家里最强的。<code>Effective context engineering for AI agents</code> 先把问题定性为：</p>
+        <blockquote>“Context is a critical but finite resource”</blockquote>
+        <p>然后它把长任务的手段明确列成几类：compaction、structured note-taking、sub-agent architectures。这里已经不再是 prompt engineering 视角，而是 attention budget 和 context assembly 视角。</p>
+        <p>到了 <code>Managed Agents</code>，Anthropic 进一步把“上下文”和“会话”彻底拆开，直接写道：</p>
+        <blockquote>“The session is not Claude’s context window”</blockquote>
+        <p>这句几乎可以视为最近 agent engineering 最重要的原话之一。它的含义是：真正的会话本体不应等于 prompt 中保留下来的 token。session 是外部的、durable 的、可查询的；context window 只是 harness 在当前回合装配给模型的工作集。</p>
+
+        <pre><code class="language-text">wake(sessionId)
+getSession(id)
+emitEvent(id, event)
+getEvents()</code></pre>
+
+        <p>这组接口名已经说明了它的设计哲学：session 是 append-only event log，harness 负责按需切片、重放、变换，再组装出本轮 context。compaction、trimming、summarization 不再是“记忆本体”，只是对当前上下文的加工策略。</p>
+
+        <h3>3.3 计划和执行分开</h3>
+        <p>第三条是 Anthropic 最近最核心的重构点。<code>Scaling Managed Agents</code> 开头第一句就是：</p>
+        <blockquote>“Harnesses encode assumptions that go stale as models improve.”</blockquote>
+        <p>接着它回顾了旧架构：session、harness、sandbox 放在同一个容器里。这种做法一开始简单，但很快碰到典型的 <code>pets vs cattle</code> 问题：容器挂了，session 跟着丢；要 debug，又得进入装着用户数据的容器；客户一旦要求连自己的 VPC，整套假设都要重写。</p>
+        <p>Anthropic 的解法，是把“大脑”“双手”“会话”拆成三个独立接口。它的中心句是：</p>
+        <blockquote>“decouple the brain from the hands”</blockquote>
+        <p>并直接把 hands 统一成：</p>
+        <blockquote><code>execute(name, input) → string</code></blockquote>
+        <p>这不是修辞，而是接口设计。sandbox、browser、MCP server、另一个 subagent，本质上都只是执行表面。规划中枢负责持续推理与决策；执行表面负责实际动作；session 负责状态保持。三者都可以独立失败、独立替换。</p>
+        <p>Anthropic 随后又把 harness 本身做成无状态，可在崩溃后用 <code>wake(sessionId)</code> 从 session log 继续恢复。这意味着“计划”和“执行”不再被锁死在同一进程里，甚至不必在同一环境里。</p>
+        <p>因此，Anthropic 真正重构掉的不是某个 SDK API，而是一整组旧假设：上下文不等于会话，角色不等于能力，容器不等于 agent。本质上，它在押注最小而稳定的接口，而不是越来越细的角色分工体系。</p>
+
+        <h3>小结</h3>
+        <p>Anthropic 这条线的独特之处在于，它已经不满足于“提供一套 agent API”，而是在重新定义：<strong>长程 agent 的最小稳定接口应该是什么。</strong> 三家之中，Anthropic 最接近 meta-harness 设计。</p>
+
+        <h2 id="timeline">4. 从时间线上看发展</h2>
+        <p>把这些事件按时间推开，会看到一条非常清晰的轨迹：过去一年半里，“agent”这个词本身越来越轻，真正变重的是它周围的工程组件。</p>
+
+        <h3>4.1 2024 年 10 月：先把复杂任务拆成角色与 handoff</h3>
+        <p>2024 年 10 月，OpenAI 发布 <code>Swarm</code>，用 <code>Agent</code> 与 <code>Handoff</code> 两个原语给多 agent 协作建立了第一个清晰范式。那时候的默认理解是：复杂任务要拆，拆给不同角色的 agent，再通过 handoff 转交控制权。</p>
+        <p>这一步的重要性在于，它第一次把“多 agent”从概念讲法变成了可运行的最小控制循环。但它的默认假设仍然是按角色切分。</p>
+
+        <h3>4.2 2025 年上半年：multi-agent 研究密集期</h3>
+        <p>2025 年 3 月到 6 月，三家都在推多 agent。OpenAI 把 Swarm 升级为 <code>Agents SDK</code>；Anthropic 发布 <code>How we built our multi-agent research system</code>；Google 推出 ADK，并在公开文档里大量使用 coordinator-subagents、workflow agents、hierarchical multi-agent 这些结构。</p>
+        <p>同一时期，METR 把讨论焦点从“答得对不对”推进到“能否完成更长任务”。这一步非常关键，因为它把问题从单次推理拉回到了 task horizon 和 runtime reliability。</p>
+        <p>表面上看，这一阶段像是在为 multi-agent 定型；但暗流已经出现。Anthropic 6 月文章虽然报告了对复杂研究任务的显著提升，原文给出的数字是相对单 agent <code>90.2%</code> 的内部 eval 改进，但它同一篇文章其实已经在强调 subagent 的真正价值是并行压缩与 context 隔离。也就是说，增益来自上下文管理，而不只是“多个人设协作”。</p>
+
+        <h3>4.3 2025 年下半年：context engineering 取代 prompt engineering 成为中心议题</h3>
+        <p>到了 2025 年 9 月，Anthropic 的 <code>Effective context engineering for AI agents</code> 基本把问题说透了。复杂任务的关键不再是 prompt 写得多花，而是在有限 attention budget 内，如何持续策划进入 context window 的 token 组合。compaction、structured note-taking、sub-agent architectures 被放到同一层讨论，multi-agent 由此被降格为一种上下文管理手段，而不是默认架构答案。</p>
+        <p>同样在 2025 年，OpenAI 发布 <code>ChatGPT agent</code>，官方用的是 <code>unified agentic system</code>，而不是“我们把三个 agent 编成一个团队”。Google 的产品线也往同一方向动：Jules 是一个在云端 VM 中异步执行的 autonomous coding agent，Gemini CLI 是一个直接在终端协作的 agent。两者的分野不是角色，而是执行模式。</p>
+
+        <h3>4.4 2025 年第四季度到 2026 年第一季度：基础设施层重构开始</h3>
+        <p>接下来的变化就不再是“再发一个 agent SDK 功能”，而是开始重构运行时抽象。Anthropic 推出 <code>Agent Skills</code>、<code>Managed Agents</code>，把 skill、memory、session、harness、sandbox 拆开；Google 在 ADK 里继续补齐 session、memory、callbacks、deployment，同时产品上进一步强化 agent 与执行环境的分层；OpenAI 则一边保持 primitives 路线，一边在 AgentKit 和 ChatGPT agent 两条线上分别服务企业编排与统一产品体验。</p>
+        <p>从这一步开始，真正的问题已经不再是“agent 应该有几个角色”，而是：</p>
+        <ul>
+          <li>能力是否被做成可组合模块。</li>
+          <li>session 是否独立于 context window。</li>
+          <li>planner 是否独立于 executors。</li>
+        </ul>
+
+        <h3>4.5 一条总的趋势</h3>
+        <p>如果把三家的动向与 METR、Cognition 这些外部实践放在一起看，会发现一个很稳的趋势：越往后，“agent”这个词承载的意义越轻。2024 年的 agent 还很像“一个带 instructions 和 tools 的 LLM loop”；到了 2026 年，更关键的已经变成它外面的那一圈基础设施：session log、skill registry、tool surfaces、sandbox、callbacks、guardrails、observability、eval。</p>
+        <p>换句话说，真正发生的不是 agent 数量之争，而是工程重心迁移：<strong>从 prompt 到 context，从角色到能力，从单体 agent 到 harness。</strong></p>
+
+        <h2 id="takeaways">5. Takeaways 和落地措施</h2>
+        <p>如果最后只留下最核心的东西，我认为应该是这三条。</p>
+
+        <h3>5.1 能力和角色分开</h3>
+        <p>面对长程任务和复杂任务，不要先设计很多人格。先设计稳定能力面：</p>
+        <ul>
+          <li><code>search</code></li>
+          <li><code>read</code></li>
+          <li><code>write</code></li>
+          <li><code>execute</code></li>
+          <li><code>browse</code></li>
+          <li><code>query</code></li>
+          <li><code>judge</code></li>
+        </ul>
+        <p>每个能力包都要有明确的输入输出契约、权限边界、失败方式和触发条件。角色只保留少量调度入口。</p>
+
+        <h3>5.2 context window 和 session 分开</h3>
+        <p>不要把 prompt history 当成系统记忆。应该先有 session log，再从 session log 中为每一轮推理装配 context window。summary、compaction、memory extraction 都只是 session 上的派生层。</p>
+        <p>一个可用的最小实现至少应记录：</p>
+        <ul>
+          <li>用户输入</li>
+          <li>模型输出</li>
+          <li>tool call</li>
+          <li>tool result</li>
+          <li>handoff/subagent 边界</li>
+          <li>错误与重试</li>
+          <li>关键状态变更</li>
+        </ul>
+
+        <h3>5.3 计划和执行分开</h3>
+        <p>planner 和 executor 必须是两层东西。</p>
+        <ul>
+          <li>planner 负责理解目标、分解任务、选择下一步、根据环境反馈更新计划。</li>
+          <li>executors 负责执行，可以是 sandbox、browser、database tool、MCP server、subagent。</li>
+        </ul>
+        <p>每个 executor 至少要有：</p>
+        <ul>
+          <li><code>name</code></li>
+          <li><code>input schema</code></li>
+          <li><code>output schema</code></li>
+          <li><code>failure mode</code></li>
+          <li><code>retry policy</code></li>
+          <li><code>permission boundary</code></li>
+        </ul>
+
+        <h3>5.4 默认 agent 会偏航</h3>
+        <p>这点在三家官方材料和 Cognition 的外部实践里是完全一致的。长程 agent 不是一个会自动成功的 prompt，而是一个会偏航、会失败、需要恢复的运行时系统。所以必须补上：</p>
+        <ul>
+          <li>checkpoints</li>
+          <li>tracing / observability</li>
+          <li>evals</li>
+          <li>retry logic</li>
+          <li>guardrails</li>
+          <li>permission boundaries</li>
+        </ul>
+
+        <h3>5.5 一个最小可落地架构</h3>
+        <p>如果今天让我从零搭一个能做复杂任务的 agent，我会优先做下面这个骨架：</p>
+        <ol>
+          <li>一个主 planner，负责长期目标和阶段分解。</li>
+          <li>一个 skill/tool registry，所有能力模块都从这里暴露。</li>
+          <li>一个 durable session log，作为系统真相。</li>
+          <li>一组可替换 executors，统一通过结构化接口调用。</li>
+          <li>一层 callbacks / guardrails / permissions，控制高风险动作。</li>
+          <li>一套 tracing + eval + checkpoint 机制，专门处理长程失败。</li>
+        </ol>
+        <p>这六件事比“是否采用 multi-agent”更基础。multi-agent 只是组织方式之一；<strong>三种分离</strong>才是更底层的结构约束。</p>
+
+        <h2 id="conclusion">结论</h2>
+        <p>如果把最近 agent 发展的主线压成一句话，那就是：</p>
+        <blockquote><strong>随着任务长度上升，agent 系统的核心问题正在从模型能力转向 harness 结构。</strong></blockquote>
+        <p>而这件事最终可以压成三个最不容易过时的判断：</p>
+        <ol>
+          <li>能力和角色分开。</li>
+          <li>context window 和 session 分开。</li>
+          <li>计划和执行分开。</li>
+        </ol>
+        <p>OpenAI 用 primitives 回答这个问题，Google 用 framework 回答这个问题，Anthropic 则开始用对 harness 的重构来回答这个问题。</p>
+        <p>对真正的长程任务和复杂任务来说，这三个判断比任何单一 benchmark、单一 SDK 功能、或者单一产品发布都更重要。</p>
+
+        <section class="sources" id="sources">
+          <h2>参考材料</h2>
+
+          <h3>OpenAI</h3>
+          <ul>
+            <li><a href="https://github.com/openai/swarm">Swarm (experimental, educational)</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/agents/">OpenAI Agents SDK: Agents</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/tools/">OpenAI Agents SDK: Tools</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/handoffs/">OpenAI Agents SDK: Handoffs</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/context/">OpenAI Agents SDK: Context management</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/multi_agent/">OpenAI Agents SDK: Agent orchestration</a></li>
+            <li><a href="https://openai.github.io/openai-agents-python/sessions/">OpenAI Agents SDK: Sessions</a></li>
+            <li><a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">A practical guide to building agents</a></li>
+            <li><a href="https://openai.com/index/introducing-agentkit/">Introducing AgentKit</a></li>
+            <li><a href="https://openai.com/index/introducing-chatgpt-agent/">Introducing ChatGPT agent</a></li>
+          </ul>
+
+          <h3>Google</h3>
+          <ul>
+            <li><a href="https://adk.dev/agents/workflow-agents/">ADK: Workflow Agents</a></li>
+            <li><a href="https://adk.dev/workflows/collaboration/">ADK: Collaborative agents</a></li>
+            <li><a href="https://adk.dev/sessions/">ADK: Session, State, and Memory</a></li>
+            <li><a href="https://adk.dev/callbacks/">ADK: Callbacks</a></li>
+            <li><a href="https://adk.dev/get-started/about/">ADK: Technical Overview</a></li>
+            <li><a href="https://adk.dev/skills/">ADK: Skills for Agents</a></li>
+            <li><a href="https://adk.dev/agents/multi-agents/">ADK: Multi-agent systems</a></li>
+            <li><a href="https://blog.google/technology/google-labs/jules/">Build with Jules, your asynchronous coding agent</a></li>
+            <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-cli-open-source-ai-agent/">Gemini CLI: your open-source AI agent</a></li>
+            <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-cli-extensions/">Introducing Gemini CLI extensions</a></li>
+          </ul>
+
+          <h3>Anthropic</h3>
+          <ul>
+            <li><a href="https://www.anthropic.com/engineering/managed-agents">Scaling Managed Agents: Decoupling the brain from the hands</a></li>
+            <li><a href="https://www.anthropic.com/engineering/built-multi-agent-research-system">How we built our multi-agent research system</a></li>
+            <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a></li>
+            <li><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">Effective harnesses for long-running agents</a></li>
+            <li><a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills">Equipping agents for the real world with Agent Skills</a></li>
+            <li><a href="https://www.anthropic.com/research/building-effective-agents/">Building effective agents</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/claude-code/sdk">Claude Code SDK</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/claude-code/sub-agents">Subagents</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/claude-code/hooks">Hooks reference</a></li>
+            <li><a href="https://docs.anthropic.com/en/docs/mcp">Model Context Protocol (MCP)</a></li>
+          </ul>
+
+          <h3>外部旁证</h3>
+          <ul>
+            <li><a href="https://metr.org/time-horizons/">METR, Task-Completion Time Horizons of Frontier AI Models</a></li>
+            <li><a href="https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/">METR, Measuring AI Ability to Complete Long Tasks</a></li>
+            <li><a href="https://cognition.ai/blog/how-cognition-uses-devin-to-build-devin">Cognition, How Cognition Uses Devin to Build Devin</a></li>
+            <li><a href="https://devin.ai/agents101">Cognition, Coding Agents 101: The Art of Actually Getting Things Done</a></li>
+            <li><a href="https://docs.devin.ai/enterprise/overview">Devin Docs: Enterprise overview</a></li>
+            <li><a href="https://docs.devin.ai/enterprise/deploy">Devin Docs: Enterprise deployment</a></li>
+          </ul>
+        </section>
+
+      </div>
+    </article>
+  </div>
+</body>
+</html>

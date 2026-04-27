@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding 实战指南</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --accent: #7c6af7;
+    --accent2: #5eead4;
+    --accent3: #f97316;
+    --accent4: #fb7185;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --code-bg: #12141f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 240px;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+  }
+
+  nav .logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  nav .logo h2 { font-size: 14px; color: var(--accent); font-weight: 600; letter-spacing: 0.05em; }
+  nav .logo p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  nav a {
+    display: block;
+    padding: 7px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(124,106,247,0.08);
+  }
+  nav .nav-section {
+    padding: 12px 20px 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  main {
+    margin-left: 240px;
+    flex: 1;
+    max-width: 860px;
+    padding: 48px 52px;
+  }
+
+  /* Hero */
+  .hero {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .tag {
+    display: inline-block;
+    background: rgba(124,106,247,0.15);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    border: 1px solid rgba(124,106,247,0.3);
+  }
+  .hero h1 { font-size: 32px; font-weight: 700; line-height: 1.25; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero .subtitle { color: var(--text-muted); font-size: 16px; }
+
+  /* Sections */
+  section { margin-bottom: 56px; scroll-margin-top: 32px; }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: rgba(124,106,247,0.2);
+    color: var(--accent);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  h3 { font-size: 15px; font-weight: 600; color: var(--accent2); margin: 20px 0 10px; }
+
+  p { color: var(--text-muted); margin-bottom: 12px; }
+  p strong { color: var(--text); }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 14px 0;
+  }
+  .code-header {
+    background: var(--surface2);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-header .lang {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .code-header .dots { display: flex; gap: 6px; }
+  .code-header .dots span {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28c840; }
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9d1d9;
+  }
+  .c-comment { color: #6e7681; }
+  .c-key { color: #ff7b72; }
+  .c-str { color: #a5d6ff; }
+  .c-val { color: #79c0ff; }
+  .c-sec { color: var(--accent2); font-weight: 600; }
+  .c-prompt { color: var(--yellow); }
+  .c-cmd { color: var(--accent); }
+  .c-good { color: var(--green); }
+  .c-bad { color: var(--accent4); }
+
+  /* Compare blocks */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .compare-item {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .compare-item.bad { border-color: rgba(251,113,133,0.3); }
+  .compare-item.good { border-color: rgba(74,222,128,0.3); }
+  .compare-header {
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-item.bad .compare-header { background: rgba(251,113,133,0.1); color: var(--accent4); }
+  .compare-item.good .compare-header { background: rgba(74,222,128,0.1); color: var(--green); }
+  .compare-item pre { padding: 12px 14px; font-size: 12px; color: var(--text-muted); }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .card p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 9px 14px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(46,51,71,0.5);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--text); }
+  td code {
+    background: var(--surface2);
+    color: var(--accent2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* Callout */
+  .callout {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-left: 3px solid;
+    font-size: 14px;
+  }
+  .callout.tip { background: rgba(124,106,247,0.08); border-color: var(--accent); }
+  .callout.warn { background: rgba(251,191,36,0.08); border-color: var(--yellow); }
+  .callout.info { background: rgba(94,234,212,0.08); border-color: var(--accent2); }
+  .callout strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout.tip strong { color: var(--accent); }
+  .callout.warn strong { color: var(--yellow); }
+  .callout.info strong { color: var(--accent2); }
+  .callout p { margin: 0; color: var(--text); }
+
+  /* List */
+  ul, ol { padding-left: 20px; color: var(--text-muted); }
+  li { margin-bottom: 5px; font-size: 14px; }
+  li strong { color: var(--text); }
+  li code {
+    background: var(--surface2);
+    color: var(--accent2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* Step flow */
+  .steps { margin: 14px 0; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(124,106,247,0.2);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content { flex: 1; }
+  .step-content strong { color: var(--text); display: block; font-size: 14px; }
+  .step-content span { color: var(--text-muted); font-size: 13px; }
+
+  /* Summary box */
+  .summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 20px;
+  }
+  .summary h3 { color: var(--accent); margin-top: 0; margin-bottom: 14px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* inline code */
+  p code, li code {
+    background: var(--surface2);
+    color: var(--accent2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* Principles */
+  .principles { margin-bottom: 56px; }
+  .principles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .principle-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .principle-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .p1::before { background: var(--accent); }
+  .p2::before { background: var(--accent2); }
+  .p3::before { background: var(--yellow); }
+  .p4::before { background: var(--accent4); }
+  .p5::before { background: var(--green); }
+  .principle-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .p1 .principle-num { color: var(--accent); }
+  .p2 .principle-num { color: var(--accent2); }
+  .p3 .principle-num { color: var(--yellow); }
+  .p4 .principle-num { color: var(--accent4); }
+  .p5 .principle-num { color: var(--green); }
+  .principle-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .principle-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .principle-card.wide { grid-column: 1 / -1; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 24px 20px; }
+    .compare, .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- Sidebar -->
+<nav>
+  <div class="logo">
+    <h2>VIBE CODING</h2>
+    <p>AI Solutions Team · 2026</p>
+  </div>
+  <a href="#principles">四条原则</a>
+  <div class="nav-section">核心系统</div>
+  <a href="#why-fail">一、系统 &gt; Prompt</a>
+  <a href="#docs-first">二、文档优先系统</a>
+  <a href="#verifiable">三、让每一步可验证</a>
+  <a href="#context">四、主动管理上下文</a>
+  <a href="#collab">五、在 Vibe Coding 中分工合作</a>
+  <div class="nav-section">收尾</div>
+  <a href="#summary">六、总结</a>
+  <a href="#resources">相关资料</a>
+</nav>
+
+<!-- Main content -->
+<main>
+
+  <div class="hero">
+    <div class="tag">内部分享</div>
+    <h1>Vibe Coding <span>实战指南</span></h1>
+    <p class="subtitle">不是 AI 有问题，是你没给 AI 可以依靠的东西。<br>系统比 Prompt 更重要。</p>
+  </div>
+
+  <!-- 原则 -->
+  <section id="principles" class="principles">
+    <h2 style="font-size:17px;border-bottom-color:transparent;margin-bottom:4px;padding-bottom:0;">
+      四条核心原则
+    </h2>
+    <p style="margin-bottom:0;"></p>
+    <div class="principles-grid">
+
+      <div class="principle-card p1">
+        <div class="principle-num">原则 01 → 章节二</div>
+        <div class="principle-title">文档是给 AI 的约束护栏</div>
+        <div class="principle-desc">
+          AI 在你的清晰度结束的地方开始幻觉。在写代码之前写文档，
+          不是为了存档，而是给 AI 划定边界：做什么、不做什么、
+          用什么技术栈、长什么样。文档即护栏，意图即代码质量。
+        </div>
+      </div>
+
+      <div class="principle-card p2">
+        <div class="principle-num">原则 02 → 章节三</div>
+        <div class="principle-title">给 AI 可以验证自己的东西</div>
+        <div class="principle-desc">
+          提供测试用例、截图、预期输出。AI 有了验证手段，
+          就能自我迭代而不是等你来发现错误。
+          让 AI 知道"成功"长什么样，是比更好的 Prompt 更高杠杆的动作。
+        </div>
+      </div>
+
+      <div class="principle-card p3">
+        <div class="principle-num">原则 03 → 章节四</div>
+        <div class="principle-title">上下文是最重要的资源</div>
+        <div class="principle-desc">
+          上下文窗口满了，AI 性能就降——遗忘早期指令、产生更多错误。
+          任务切换前 <code>/clear</code>，调查用 subagents，CLAUDE.md 保持精简。
+          无关的历史比没有上下文更糟糕。
+        </div>
+      </div>
+
+      <div class="principle-card p4">
+        <div class="principle-num">原则 04 → 章节五</div>
+        <div class="principle-title">分工靠边界，防回归靠文档</div>
+        <div class="principle-desc">
+          多人或多 Agent 并行时，靠文件级分工和 Git Worktree 隔离，避免互相覆盖。
+          修完 bug 立即固化约束——跷跷板问题的根源不是 AI 能力，
+          是<strong style="color:var(--text);">修复停留在对话里，没有落进 CLAUDE.md / lessons.md。</strong>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 一 -->
+  <section id="why-fail">
+    <h2><span class="num">1</span>系统 &gt; Prompt</h2>
+
+    <p>AI 的能力已经足够强——用一句话描述需求，它能写出可运行的代码。真正决定质量上限的，不是 Prompt 技巧，而是你给 AI 可以依靠的东西。</p>
+
+    <div class="callout tip">
+      <strong>核心洞察</strong>
+      <p>AI 是翻译器：把你的意图翻译成代码。意图越清晰、约束越完整，代码质量越高。AI 会话间没有记忆，每次新会话从零开始——没有系统，每次都在重建上下文。<strong>提升上限的路径不是更好的 Prompt，是更好的系统。</strong></p>
+    </div>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ Prompt 驱动</div>
+        <pre>靠每次 Prompt 的质量
+控制 AI 的行为
+
+→ 好结果依赖运气
+→ 每次新会话从零开始
+→ 错误会反复出现</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 系统驱动</div>
+        <pre>文档约束 + 验证手段
++ 上下文管理 + 固化经验
+
+→ AI 有边界，行为可预期
+→ 跨会话保持一致性
+→ 每次纠正都变成资产</pre>
+      </div>
+    </div>
+
+    <h3>同一个需求，两种输入的差距</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">Prompt 驱动 vs 系统驱动</span>
+      </div>
+      <pre><span class="c-comment"># Prompt 驱动：全靠 AI 猜</span>
+<span class="c-bad">"帮我做一个 App，让用户可以发帖，现代感，要好看"</span>
+<span class="c-bad">"看看哪里有 bug 修一下"</span>
+<span class="c-bad">"把登录做完"</span>
+
+<span class="c-comment"># 系统驱动：AI 有依据可以执行</span>
+<span class="c-good">"读 @CLAUDE.md 和 @progress.txt，实现 @IMPLEMENTATION_PLAN.md 步骤 2.1，完成后运行测试。"</span>
+<span class="c-good">"用 subagent 调查 src/auth/，找到 token 刷新的竞态条件，修复后更新 lessons.md。"</span>
+<span class="c-good">"按 @APP_FLOW.md § 3 实现登录页，样式参考 @FRONTEND_GUIDELINES.md 的设计令牌。"</span></pre>
+    </div>
+
+    <p>后面四个章节，就是这个系统的四个组成部分：文档约束、可验证的步骤、上下文管理、经验固化。</p>
+  </section>
+
+  <!-- 二 -->
+  <section id="docs-first">
+    <h2><span class="num">2</span>文档优先系统</h2>
+
+    <p>在写任何代码之前，先让 AI 把你的想法打穿，再用对话结果生成规范文档。文档不是给人看的记录，是给 AI 划定边界的约束护栏。</p>
+
+    <h3>Step 1：先撕碎想法</h3>
+    <p>在 <strong>Plan Mode</strong> 下发这条 Prompt，让 AI 把你的方案问到没有盲点为止。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">Prompt — Interrogation</span>
+      </div>
+      <pre><span class="c-prompt">在写任何代码之前，在 Planning 模式下无尽地审问我的想法。
+不要假设任何问题，问问题直到没有假设剩下。</span>
+
+<span class="c-comment"># AI 会追问：这给谁用？核心行动是什么？需要保存什么数据？
+# 错误时发生什么？需要登录？需要数据库？手机上工作吗？</span></pre>
+    </div>
+
+    <div class="callout info">
+      <strong>操作</strong>
+      <p>在 Claude Code / Cursor 右上角切换到 <strong>Plan Mode</strong>，AI 只读不写，专注推演逻辑。审问完毕确认无漏洞后再切回 Normal Mode。</p>
+    </div>
+
+    <h3>Step 2：一键生成六份规范文档</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">Prompt</span>
+      </div>
+      <pre><span class="c-prompt">基于我们的审问，生成规范文档：
+PRD.md、APP_FLOW.md、TECH_STACK.md、FRONTEND_GUIDELINES.md、
+BACKEND_STRUCTURE.md、IMPLEMENTATION_PLAN.md。
+具体且详尽，没有歧义。</span></pre>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>文件</th><th>作用</th><th>核心价值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>PRD.md</code></td><td>产品需求，定义"完成"标准</td><td>明确什么在 scope，什么不在</td></tr>
+        <tr><td><code>APP_FLOW.md</code></td><td>每个页面和导航路径</td><td>防止 AI 猜测用户如何移动</td></tr>
+        <tr><td><code>TECH_STACK.md</code></td><td>所有依赖锁定到精确版本</td><td>消除幻觉依赖和随机技术选择</td></tr>
+        <tr><td><code>FRONTEND_GUIDELINES.md</code></td><td>完整设计系统（颜色/字体/间距）</td><td>每个组件视觉一致，不再有随机颜色</td></tr>
+        <tr><td><code>BACKEND_STRUCTURE.md</code></td><td>数据库 Schema、API 合约</td><td>按蓝图构建，不按假设</td></tr>
+        <tr><td><code>IMPLEMENTATION_PLAN.md</code></td><td>逐步构建序列</td><td>步骤越细，AI 猜测越少</td></tr>
+      </tbody>
+    </table>
+
+    <h3>FRONTEND_GUIDELINES.md 中锁定设计决策</h3>
+    <p>用截图替代文字描述——直接把截图<strong>拖入输入框或 Ctrl+V 粘贴</strong>，Claude 分析布局、颜色、间距并生成匹配代码。</p>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ 模糊</div>
+        <pre>"做一个现代感的卡片，
+有点透明，看起来很高级"</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 锁定在文档里</div>
+        <pre>## 调色板
+primary:    #7c6af7
+background: #0f1117
+surface:    #1a1d27
+## 组件规范
+卡片: backdrop-blur-md bg-white/10
+     border border-white/20
+     hover:scale-105 duration-200</pre>
+      </div>
+    </div>
+
+    <h3>CLAUDE.md —— AI 的操作手册</h3>
+    <p>Claude Code 每次会话<strong>自动读取</strong>此文件。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">terminal — 快速生成 CLAUDE.md 初稿</span>
+      </div>
+      <pre><span class="c-cmd">/init</span>   <span class="c-comment"># Claude Code 分析项目自动生成，然后手动精炼</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠️ 关键原则</strong>
+      <p>无情地修剪。每行都问：删掉它 AI 会犯错吗？不会就删。臃肿的 CLAUDE.md 会让 AI 忽略你的实际指令。</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">CLAUDE.md</span>
+      </div>
+      <pre><span class="c-comment"># 技术栈</span>
+<span class="c-key">Stack:</span> <span class="c-str">Next.js 14.1.0, TypeScript 5.3.3, Tailwind CSS 3.4.0</span>
+<span class="c-key">Database:</span> <span class="c-str">Supabase</span>  <span class="c-key">Auth:</span> <span class="c-str">Clerk</span>
+
+<span class="c-comment"># 约定（只写 AI 猜不到的）</span>
+<span class="c-val">Components: src/components/ 功能组件 + hooks</span>
+<span class="c-val">Styles: 只用 Tailwind，禁止内联样式</span>
+<span class="c-val">只构建 PRD.md 中列出的功能，不要自行扩展</span>
+<span class="c-val">只使用 TECH_STACK.md 中的包，不添加新依赖</span>
+
+<span class="c-comment"># 导入其他文档（避免 CLAUDE.md 过长）</span>
+<span class="c-val">See @FRONTEND_GUIDELINES.md for design tokens.</span>
+<span class="c-val">See @docs/api-conventions.md for REST API rules.</span>
+
+<span class="c-comment"># 会话规则</span>
+<span class="c-val">每次会话开始先读 progress.txt</span>
+<span class="c-val">纠正后立即更新 lessons.md，不要重复同样的错误</span></pre>
+    </div>
+
+    <h3>progress.txt —— 会话之间的桥梁</h3>
+    <p>AI 关闭会话后记忆清零，这是你的外部记忆。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">progress.txt</span>
+      </div>
+      <pre><span class="c-sec">已完成:</span>
+<span class="c-good">✓</span> 用户认证 (Clerk + Google OAuth)
+<span class="c-good">✓</span> 产品列表 API (GET /api/products)
+
+<span class="c-sec">进行中:</span>
+<span class="c-prompt">→</span> 产品详情页 /products/[id] — 前端完成，API 未连
+
+<span class="c-sec">接下来:</span>
+<span class="c-val">- 购物车功能 / Stripe 结账</span>
+
+<span class="c-sec">已知 Bug:</span>
+<span class="c-bad">!</span> 手机端导航栏点击后不关闭</pre>
+    </div>
+
+    <h3>每次会话开始的第一条 Prompt</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">prompt — 每次新会话必发</span>
+      </div>
+      <pre><span class="c-prompt">读 @CLAUDE.md 和 @progress.txt，然后告诉我当前状态。</span></pre>
+    </div>
+  </section>
+
+  <!-- 三 -->
+  <section id="verifiable">
+    <h2><span class="num">3</span>让每一步可验证</h2>
+
+    <p>给 AI 提供验证手段是你能做的最高杠杆动作。AI 有了验证方式就能自我迭代，而不是等你来发现错误。</p>
+
+    <h3>给每个任务一个验证标准</h3>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ 没有验证</div>
+        <pre>实现一个验证 email 的函数</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 有验证</div>
+        <pre>实现 validateEmail 函数。
+测试用例：
+- user@example.com → true
+- invalid → false
+- user@.com → false
+实现后运行测试。</pre>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ 模糊</div>
+        <pre>"让它看起来更好"</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 可验证</div>
+        <pre>[粘贴截图] 实现这个设计。
+截图结果与原始设计对比，
+列出差异并修复。</pre>
+      </div>
+    </div>
+
+    <h3>Plan Mode 四步流程</h3>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Plan Mode — 探索</strong>
+          <span>只读不写。理解现有代码结构，不做任何修改。</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Plan Mode — 规划</strong>
+          <span>要求 AI 生成详细实施计划。按 <code>Ctrl+G</code> 在编辑器中直接修改计划内容。</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Normal Mode — 实施 + 验证</strong>
+          <span>切回 Normal Mode 按计划编码，同时要求 AI 写测试并运行。让 AI 自我确认结果。</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>提交</strong>
+          <span>描述性 commit message，可直接让 AI 执行 <code>git commit</code> 和 <code>gh pr create</code>。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">CLI — Plan Mode 四步对应操作</span>
+      </div>
+      <pre><span class="c-comment"># Step 1: 进入 Plan Mode（UI 切换 / Cursor 模式按钮）</span>
+<span class="c-prompt">读取 src/auth/，理解现有认证流程</span>
+
+<span class="c-comment"># Step 2: 仍在 Plan Mode，要求生成计划</span>
+<span class="c-prompt">我想加 Google OAuth，生成实施计划</span>
+<span class="c-cmd">Ctrl+G</span>                        <span class="c-comment"># 在编辑器中直接修改计划</span>
+
+<span class="c-comment"># Step 3: 切回 Normal Mode，执行计划</span>
+<span class="c-prompt">按计划执行 Step 1，完成后跑 flutter analyze</span>
+
+<span class="c-comment"># Step 4: 让 AI 提交</span>
+<span class="c-prompt">提交这次改动，写描述性 commit message</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <strong>何时跳过 Plan Mode</strong>
+      <p>修单行、改拼写、加日志 → 直接执行。涉及多个文件、架构决策、或不熟悉的区域 → 先规划。</p>
+    </div>
+
+    <h3>尽早且经常纠正方向</h3>
+    <p>看到 AI 偏离方向，立刻按 Esc 中断，比等它写完再说更省上下文。两次纠正无效 → <code>/clear</code> 重新开始。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">操作 — 中断与重来</span>
+      </div>
+      <pre><span class="c-comment"># 看到方向不对，立刻中断</span>
+<span class="c-cmd">Esc</span>                    <span class="c-comment"># 停止当前执行，不丢失上下文</span>
+                       <span class="c-comment"># 然后重新描述正确方向，继续</span>
+
+<span class="c-comment"># 同一问题纠正两次还是错</span>
+<span class="c-cmd">/clear</span>                 <span class="c-comment"># 上下文已被错误路径污染，清空重来</span>
+                       <span class="c-comment"># 用更精确的 Prompt 重新开始</span></pre>
+    </div>
+
+    <h3>把任务拆成可验证的步骤</h3>
+    <p>每个步骤要小到可以独立测试，用 <code>@</code> 引用文档让 AI 按规范执行。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">IMPLEMENTATION_PLAN.md 示例</span>
+      </div>
+      <pre><span class="c-sec">Phase 1: 项目初始化</span>
+<span class="c-val">1.1 初始化项目，从 @TECH_STACK.md 安装依赖</span>
+<span class="c-val">1.2 按 @FRONTEND_GUIDELINES.md 配置 Tailwind 设计令牌</span>
+
+<span class="c-sec">Phase 2: 认证</span>
+<span class="c-val">2.1 集成 Clerk，配置 Google OAuth</span>
+<span class="c-val">2.2 登录/注册页面（流程见 @APP_FLOW.md § 3）</span>
+
+<span class="c-sec">Phase 3: 核心功能</span>
+<span class="c-val">3.1 产品列表页，样式参考 @FRONTEND_GUIDELINES.md § 2</span>
+<span class="c-val">3.2 产品详情页 /products/[id]</span></pre>
+    </div>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ 模糊</div>
+        <pre>"构建下一个东西"</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 精确 + 可验证</div>
+        <pre>"读 @CLAUDE.md 和 @progress.txt。
+构建 @IMPLEMENTATION_PLAN.md 步骤 3.1。
+完成后运行 flutter analyze，
+确认无 warning 再告诉我。"</pre>
+      </div>
+    </div>
+
+    <h3>Hooks：让验证自动发生</h3>
+    <p>Hooks 是确定性的，不依赖 AI 是否记得执行检查。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">prompt — 让 AI 生成 hook，存入 .claude/settings.json</span>
+      </div>
+      <pre><span class="c-prompt">写一个每次文件编辑后自动运行 flutter analyze 的 hook</span>
+<span class="c-prompt">写一个阻止写入 migrations/ 文件夹的 hook</span>
+
+<span class="c-comment"># 交互式配置：/hooks</span>
+<span class="c-comment"># 配置存 .claude/settings.json，提交到 git 供团队共享</span></pre>
+    </div>
+  </section>
+
+  <!-- 四 -->
+  <section id="context">
+    <h2><span class="num">4</span>主动管理上下文</h2>
+
+    <div class="callout warn">
+      <strong>官方文档核心结论</strong>
+      <p>上下文窗口是最重要的资源。窗口满 → LLM 性能下降 → 遗忘早期指令、更多错误。单次调试会话可消耗数万 token。</p>
+    </div>
+
+    <h3>上下文操作指令</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">Claude Code — 上下文管理</span>
+      </div>
+      <pre><span class="c-comment"># 清理</span>
+<span class="c-cmd">/clear</span>                        <span class="c-comment"># 完全重置上下文（任务切换时用）</span>
+<span class="c-cmd">/compact</span>                      <span class="c-comment"># 压缩历史，AI 保留关键决策和代码状态</span>
+<span class="c-cmd">/compact Focus on API changes</span>  <span class="c-comment"># 指定压缩时重点保留什么</span>
+
+<span class="c-comment"># 中断与回退</span>
+<span class="c-cmd">Esc</span>                           <span class="c-comment"># 中断执行，上下文保留，可立即重定向</span>
+<span class="c-cmd">Esc Esc</span>  <span class="c-comment">或</span>  <span class="c-cmd">/rewind</span>         <span class="c-comment"># 检查点菜单：恢复对话/代码/两者，或从某点压缩</span>
+
+<span class="c-comment"># 跨会话恢复</span>
+<span class="c-cmd">claude --continue</span>             <span class="c-comment"># 继续最近一次会话，不用重新解释上下文</span>
+<span class="c-cmd">claude --resume</span>               <span class="c-comment"># 从历史列表中选择</span>
+<span class="c-cmd">/rename oauth-migration</span>       <span class="c-comment"># 给会话命名，便于后续 --resume 查找</span></pre>
+    </div>
+
+    <h3>对话管理：三个核心技巧</h3>
+    <p>官方文档把这三件事列为最高频操作，值得单独记住。</p>
+
+    <div class="cards" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:16px;">
+      <div class="card" style="border-color:rgba(124,106,247,0.3);">
+        <div class="card-title" style="color:var(--accent);">① 改变方向</div>
+        <p>AI 跑偏了，立刻按 <code>Esc</code> 中断。上下文全部保留，重新描述正确方向继续。不要等它跑完再说——越晚越耗上下文。</p>
+      </div>
+      <div class="card" style="border-color:rgba(251,191,36,0.3);">
+        <div class="card-title" style="color:var(--yellow);">② 检查点倒带</div>
+        <p>AI 把代码改坏了，<code>Esc Esc</code> 或 <code>/rewind</code> 打开检查点菜单，选择只还原代码、只还原对话，或两者都还原。不用 <code>git stash</code>。</p>
+      </div>
+      <div class="card" style="border-color:rgba(94,234,212,0.3);">
+        <div class="card-title" style="color:var(--accent2);">③ 恢复对话</div>
+        <p>关闭终端后上下文不会丢。<code>claude --continue</code> 接上最近一次，<code>claude --resume</code> 从列表挑。关闭前先 <code>/rename</code> 命名方便找。</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">操作 — 改变方向</span>
+      </div>
+      <pre><span class="c-comment"># 情景：AI 开始写一个你不想要的实现</span>
+<span class="c-cmd">Esc</span>                    <span class="c-comment"># 立刻中断，文件未被修改，上下文保留</span>
+
+<span class="c-comment"># 然后直接重新描述（不用重新解释背景）：</span>
+<span class="c-prompt">等一下，不要改 token.ts。
+我想在 middleware 层做，不是在 service 层。
+按这个方向重新规划。</span>
+
+<span class="c-comment"># 如果同一方向纠正两次还是不对 → 上下文已被污染</span>
+<span class="c-cmd">/clear</span>                 <span class="c-comment"># 清空重来，用更精确的 Prompt 开始</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">操作 — 检查点倒带</span>
+      </div>
+      <pre><span class="c-comment"># 情景：AI 改坏了几个文件，你想回到刚才的状态</span>
+<span class="c-cmd">Esc Esc</span>   <span class="c-comment">（连按两次）</span>
+<span class="c-comment"># 或</span>
+<span class="c-cmd">/rewind</span>
+
+<span class="c-comment"># 菜单选项：</span>
+<span class="c-val">  Revert conversation only    </span><span class="c-comment"># 只还原对话记录，代码不动</span>
+<span class="c-val">  Revert code only            </span><span class="c-comment"># 只还原文件改动，对话不动</span>
+<span class="c-val">  Revert both                 </span><span class="c-comment"># 代码 + 对话全部还原到该检查点</span>
+<span class="c-val">  Compact from here           </span><span class="c-comment"># 从这个检查点压缩，清理冗余上下文</span>
+
+<span class="c-comment"># Claude Code 每次工具调用前自动保存检查点，随时可回退</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">操作 — 恢复对话</span>
+      </div>
+      <pre><span class="c-comment"># 关闭前先命名，避免 --resume 时找不到</span>
+<span class="c-cmd">/rename oauth-migration</span>       <span class="c-comment"># 给当前会话起个有意义的名字</span>
+
+<span class="c-comment"># 下次打开终端</span>
+<span class="c-cmd">claude --continue</span>             <span class="c-comment"># 直接接上最近一次会话，上下文完整恢复</span>
+<span class="c-cmd">claude --resume</span>               <span class="c-comment"># 弹出历史列表，按名字选择</span>
+<span class="c-cmd">claude --resume oauth-migration</span> <span class="c-comment"># 直接指定会话名恢复</span>
+
+<span class="c-comment"># 恢复后不用重新解释背景，直接继续：</span>
+<span class="c-prompt">继续昨天的工作，完成 Google OAuth 的 callback handler。</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <strong>决策树：遇到问题用哪个？</strong>
+      <p>
+        AI 跑偏了但代码还没动 → <strong>Esc + 重新描述</strong><br>
+        AI 已经改坏了文件 → <strong>Esc Esc / /rewind → Revert code</strong><br>
+        同一问题纠正超过两次 → <strong>/clear 清空重来</strong><br>
+        关了终端想继续 → <strong>claude --continue 或 --resume</strong>
+      </p>
+    </div>
+
+    <h3>向 Claude 输入上下文的方式</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">prompt / terminal</span>
+      </div>
+      <pre><span class="c-comment"># @ 引用文件：Claude 读取后再回答，不用手动粘贴内容</span>
+<span class="c-val">@src/auth/token.ts</span>             <span class="c-comment"># 引用本地文件</span>
+<span class="c-val">@https://docs.example.com/api</span>  <span class="c-comment"># 引用 URL（用 /permissions 加白名单）</span>
+
+<span class="c-comment"># Pipe：直接把数据送给 Claude</span>
+<span class="c-cmd">cat error.log | claude -p "分析这个错误"</span>
+<span class="c-cmd">claude -p "列出所有 API 端点" --output-format json</span></pre>
+    </div>
+
+    <h3>Skills：可复用的项目级工作流</h3>
+    <p>把常用 prompt 做成项目 skill，存 <code>.claude/skills/</code>，用 <code>/skill-name</code> 调用。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">terminal — Skills 用法</span>
+      </div>
+      <pre><span class="c-comment"># 创建 skill 文件 .claude/skills/review-pr.md</span>
+<span class="c-comment"># 内容：你是代码审查专家，检查...</span>
+
+<span class="c-comment"># 在会话中调用</span>
+<span class="c-cmd">/review-pr</span>             <span class="c-comment"># Claude 按 skill 定义执行，不用重写 prompt</span></pre>
+    </div>
+
+    <h3>Subagents：上下文隔离的最强工具</h3>
+    <p>调查代码库时 AI 会读大量文件，全部堆在主对话里会很快耗尽上下文。Subagents 在独立上下文窗口中运行，以摘要返回结果。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">prompt</span>
+      </div>
+      <pre><span class="c-comment"># 独立上下文调查，不污染主对话</span>
+<span class="c-prompt">使用 subagents 调查 src/auth/ 如何处理 token 刷新</span>
+
+<span class="c-comment"># 实现后用子代理做 review（新鲜上下文，不偏向刚写的代码）</span>
+<span class="c-prompt">用 subagent 审查这段代码，找边界情况和竞态条件</span></pre>
+    </div>
+
+    <h3>保护上下文的 4 个习惯</h3>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">🧹 任务间 /clear</div>
+        <p>不相关任务切换前重置。无关历史比没有上下文更糟。</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🤖 调查用 Subagents</div>
+        <p>读大量文件时用子代理，探索结果以摘要返回。</p>
+      </div>
+      <div class="card">
+        <div class="card-title">✂️ CLAUDE.md 保持精简</div>
+        <p>臃肿规则 = AI 忽略规则。每行都问：删掉它会犯错吗？</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔄 两次纠正后重来</div>
+        <p>同一问题纠正两次，上下文已被污染。/clear 重新开始。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 五 -->
+  <section id="collab">
+    <h2><span class="num">5</span>在 Vibe Coding 中分工合作</h2>
+
+    <h3>Git Worktree：多人 / 多 Agent 并行互不干扰</h3>
+    <p>多个人或多个 Claude Agent 同时开发时，最大的问题是互相覆盖改动。Git Worktree 让每条分支有独立的文件系统，共享同一个 repo。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">terminal</span>
+      </div>
+      <pre><span class="c-comment"># 为两个人/Agent 各建一个隔离的 worktree</span>
+<span class="c-cmd">git worktree add ../feature-auth feature/auth</span>
+<span class="c-cmd">git worktree add ../feature-dashboard feature/dashboard</span>
+<span class="c-cmd">git worktree list</span>
+
+<span class="c-comment"># 各自在独立目录中启动 Claude 会话</span>
+<span class="c-cmd">cd ../feature-auth &amp;&amp; claude --continue</span>
+<span class="c-cmd">cd ../feature-dashboard &amp;&amp; claude --continue</span>
+
+<span class="c-comment"># 完成后删除 worktree</span>
+<span class="c-cmd">git worktree remove ../feature-auth</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">Claude Code — worktree 原生命令</span>
+      </div>
+      <pre><span class="c-comment"># Claude Code 内置支持，一键创建隔离会话</span>
+<span class="c-cmd">/worktree</span>   <span class="c-comment"># 创建新 worktree + 新会话，做完选 keep 或 remove</span></pre>
+    </div>
+
+    <h3>Writer / Reviewer 模式</h3>
+    <p>同一批代码，用两个独立 Claude 会话：一个写，一个用全新上下文审查。写代码的会话偏向于相信自己刚写的东西，新鲜上下文的 reviewer 更容易找到盲点。</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">terminal — Writer / Reviewer 分离</span>
+      </div>
+      <pre><span class="c-comment"># 会话 A（Writer）：在功能分支上写代码</span>
+<span class="c-cmd">cd feature-auth && claude --continue</span>
+
+<span class="c-comment"># 会话 B（Reviewer）：全新上下文，不受 A 的偏见影响</span>
+<span class="c-cmd">cd feature-auth && claude</span>
+<span class="c-prompt">用 subagent 完整审查 src/auth/，找：
+1. 边界情况和竞态条件
+2. 未处理的错误状态
+3. 与 API 合约不一致的地方</span></pre>
+    </div>
+
+    <h3>分工边界原则</h3>
+    <table>
+      <thead>
+        <tr><th>做法</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>文件级拆分</strong></td><td>明确谁负责哪些文件，写进任务描述</td></tr>
+        <tr><td><strong>接口先于实现</strong></td><td>前后端并行时，先约定 API Schema，各自对着 Schema 开发</td></tr>
+        <tr><td><strong>共享文件只追加</strong></td><td>对 <code>CLAUDE.md</code>、配置 jsonl 等共享文件，只追加不修改已有行</td></tr>
+        <tr><td><strong>合并前 review diff</strong></td><td>两个 Agent 都改了同一层，合并前先 <code>git diff</code> 确认无隐性覆盖</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Debug 期的跷跷板问题</h3>
+    <p>修 Bug A → Bug B 出现 → 修 Bug B → Bug A 回来。根本原因是<strong>没有把修复的约束条件写进文档</strong>，导致 AI 下次新会话把它撤销了。</p>
+
+    <div class="compare">
+      <div class="compare-item bad">
+        <div class="compare-header">✗ 跷跷板循环</div>
+        <pre>修复 Bug A
+→ AI 改了 foo.py:42
+→ 测试通过，关闭会话
+
+新会话，修 Bug B
+→ AI 读不到上次意图
+→ foo.py:42 被改回去
+→ Bug A 复活</pre>
+      </div>
+      <div class="compare-item good">
+        <div class="compare-header">✓ 修完立即固化</div>
+        <pre>修复 Bug A 后更新 CLAUDE.md：
+
+# 已修复约束（不要改动）
+- foo.py:42 必须用 async/await，
+  改回同步会导致会话超时
+  登录失败（Bug #23）</pre>
+      </div>
+    </div>
+
+    <h3>三层文档防回归</h3>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>CLAUDE.md — 约束层</strong>
+          <span>每次修复 bug 后，把<em>不能改动的原因</em>写进去。AI 下次会话自动读到。</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>lessons.md — 经验层</strong>
+          <span>格式：<em>问题 → 根本原因 → 修复方式 → 不要这样做的原因</em>。每次纠正后更新。</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>bugfix.md — 保护层</strong>
+          <span>记录关键文件的修复意图。修改相关文件前先查这里，防止无意回归。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="lang">lessons.md — 示例格式</span>
+      </div>
+      <pre><span class="c-sec">## [2025-06] 登录后会话超时</span>
+<span class="c-key">问题:</span> <span class="c-str">登录成功但刷新后跳回登录页</span>
+<span class="c-key">根因:</span> <span class="c-str">token 刷新用了同步调用，慢网络下 race condition</span>
+<span class="c-key">修复:</span> <span class="c-str">auth.py:refreshToken 改为 async/await + 加锁</span>
+<span class="c-key">约束:</span> <span class="c-val">不要把 refreshToken 改回同步，无论看起来多简洁</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>Debug 期的上下文纪律</strong>
+      <p>每个 bug 开一个<strong>独立会话</strong>，修完立即更新 lessons.md，然后 <code>/clear</code> 再开下一个。不要在一个会话里又修 bug 又加功能——上下文会被失败尝试塞满。</p>
+    </div>
+  </section>
+
+  <!-- 六 -->
+  <section id="summary">
+    <h2><span class="num">6</span>总结</h2>
+
+    <div class="summary">
+      <h3>构建之前</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="lang">checklist</span>
+        </div>
+        <pre><span class="c-good">□</span> Interrogation — 审问撕碎想法
+<span class="c-good">□</span> 生成六份规范文档（知识库）
+<span class="c-good">□</span> 写 CLAUDE.md（AI 操作手册，保持精简）
+<span class="c-good">□</span> 创建 progress.txt（起始状态）
+<span class="c-good">□</span> 收集 UI 截图参考</pre>
+      </div>
+
+      <h3 style="margin-top:20px;">构建期间</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="lang">checklist</span>
+        </div>
+        <pre><span class="c-good">□</span> 每次会话先读 CLAUDE.md + progress.txt
+<span class="c-good">□</span> Plan Mode → Agent Mode（先思考再执行）
+<span class="c-good">□</span> 每个 Prompt 引用对应规范文档的章节
+<span class="c-good">□</span> 每个功能后 git commit + 更新 progress.txt
+<span class="c-good">□</span> 纠正后更新 CLAUDE.md + lessons.md
+<span class="c-good">□</span> 任务切换前 /clear 重置上下文</pre>
+      </div>
+
+      <h3 style="margin-top:20px;">发布之前</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="lang">checklist</span>
+        </div>
+        <pre><span class="c-good">□</span> 真实手机上测试
+<span class="c-good">□</span> 空状态 / 错误状态验证
+<span class="c-good">□</span> 主要用户流程端到端走一遍</pre>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:24px;">
+      <strong>核心哲学</strong>
+      <p>AI 做所有的打字，<strong>你做所有的思考</strong>。系统比 Prompt 更重要。文档比技巧更重要。</p>
+    </div>
+
+  </section>
+
+  <!-- 相关资料 -->
+  <section id="resources">
+    <h2><span class="num" style="background:rgba(94,234,212,0.15);color:var(--accent2);">↗</span>相关资料</h2>
+
+    <p>以下三篇 Anthropic 官方文档是本次分享内容的主要来源，建议按顺序阅读。</p>
+
+    <div class="cards" style="grid-template-columns:1fr;gap:12px;margin-top:16px;">
+
+      <div class="card" style="border-color:rgba(124,106,247,0.3);">
+        <div class="card-title" style="font-size:14px;">
+          <span style="color:var(--accent);">01</span>
+          &nbsp;How Claude Code Works — Claude Code 工作原理
+        </div>
+        <p style="margin-bottom:8px;">Claude Code 如何读取代码库、管理上下文、调用工具。理解底层机制，才能更好地给 AI 提供它需要的东西。</p>
+        <a href="https://code.claude.com/docs/zh-CN/how-claude-code-works" target="_blank" style="color:var(--accent);font-size:13px;font-family:'SF Mono',monospace;">code.claude.com/docs/zh-CN/how-claude-code-works ↗</a>
+      </div>
+
+      <div class="card" style="border-color:rgba(94,234,212,0.3);">
+        <div class="card-title" style="font-size:14px;">
+          <span style="color:var(--accent2);">02</span>
+          &nbsp;Features Overview — 功能概览
+        </div>
+        <p style="margin-bottom:8px;">Claude Code 所有功能的系统性介绍：Plan Mode、Hooks、Subagents、Skills、Git Worktree、MCP 服务器等。适合作为功能手册查阅。</p>
+        <a href="https://code.claude.com/docs/zh-CN/features-overview" target="_blank" style="color:var(--accent2);font-size:13px;font-family:'SF Mono',monospace;">code.claude.com/docs/zh-CN/features-overview ↗</a>
+      </div>
+
+      <div class="card" style="border-color:rgba(251,191,36,0.3);">
+        <div class="card-title" style="font-size:14px;">
+          <span style="color:var(--yellow);">03</span>
+          &nbsp;Common Workflows — 常见工作流
+        </div>
+        <p style="margin-bottom:8px;">实战场景合集：如何做大规模代码迁移、如何处理 GitHub Issues、如何跑并行任务、如何与 CI/CD 集成。每个 workflow 都有完整的命令示例。</p>
+        <a href="https://code.claude.com/docs/zh-CN/common-workflows" target="_blank" style="color:var(--yellow);font-size:13px;font-family:'SF Mono',monospace;">code.claude.com/docs/zh-CN/common-workflows ↗</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script>
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      const activeLink = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+      if (activeLink) activeLink.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
