@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harness Engineering for 0-1 Production</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #08111f;
+  --paper: #f5efe4;
+  --paper-2: #f2eadb;
+  --panel: rgba(9, 18, 34, 0.78);
+  --panel-2: rgba(9, 18, 34, 0.64);
+  --line: rgba(22, 33, 50, 0.1);
+  --text: #162132;
+  --muted: #526077;
+  --muted-2: #7a8495;
+  --ink: #162132;
+  --ink-2: #465064;
+  --accent: #f4b860;
+  --accent-2: #8fd2ff;
+  --accent-3: #90d5a5;
+  --danger: #ff9078;
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+  --radius-xl: 30px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(143, 210, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(244, 184, 96, 0.16), transparent 24%),
+    linear-gradient(180deg, #08111f 0%, #07111c 56%, #050a13 100%);
+  color: var(--text);
+  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.38;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,0.55) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 82% 14%, rgba(255,255,255,0.4) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 72%, rgba(255,255,255,0.28) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 30% 80%, rgba(255,255,255,0.22) 0 1px, transparent 1.5px);
+}
+
+.deck {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  padding: 28px;
+}
+
+.slide.active {
+  display: block;
+}
+
+.slide::after {
+  content: attr(data-n) " / 10";
+  position: absolute;
+  top: 40px;
+  right: 48px;
+  font: 700 11px/1 "Manrope", sans-serif;
+  letter-spacing: 0.14em;
+  color: var(--muted-2);
+  text-transform: uppercase;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 234, 0.04), transparent 22%),
+    linear-gradient(180deg, rgba(9, 19, 37, 0.94) 0%, rgba(6, 12, 24, 0.9) 100%);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.frame.paper {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 22%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+  color: var(--ink);
+}
+
+.frame.paper::before {
+  border-color: rgba(22, 33, 50, 0.08);
+}
+
+.topbar {
+  position: relative;
+  z-index: 2;
+  padding: 22px 34px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.paper .topbar {
+  border-bottom-color: rgba(22, 33, 50, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font: 800 11px/1.2 "Manrope", sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.paper .eyebrow {
+  color: #88622f;
+}
+
+.title {
+  margin: 0;
+  font: 800 30px/1.16 "Manrope", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.03em;
+  max-width: 920px;
+}
+
+.paper .title {
+  color: var(--ink);
+}
+
+.meta {
+  margin-top: 4px;
+  color: var(--muted-2);
+  font-size: 12px;
+}
+
+.paper .meta {
+  color: #6f7787;
+}
+
+.body {
+  flex: 1;
+  padding: 28px 34px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-grid,
+.grid-2,
+.grid-3,
+.grid-4,
+.split-hero,
+.phase-grid,
+.path-grid,
+.principles,
+.closing,
+.compare {
+  display: grid;
+  gap: 18px;
+}
+
+.hero-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  flex: 1;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.split-hero {
+  grid-template-columns: 1.05fr 0.95fr;
+  flex: 1;
+}
+
+.phase-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.path-grid {
+  grid-template-columns: 1.1fr 0.9fr;
+  flex: 1;
+}
+
+.principles {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.closing {
+  grid-template-columns: 1.2fr 0.8fr;
+  flex: 1;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hero-title {
+  margin: 14px 0 14px;
+  font: 800 clamp(42px, 6vw, 70px)/0.94 "Manrope", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+  max-width: 12ch;
+}
+
+.hero-title span {
+  display: block;
+  color: var(--accent);
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.78;
+  max-width: 34rem;
+}
+
+.hero-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill,
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: 700 12px/1.2 "Manrope", sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.kicker {
+  padding: 8px 12px;
+  border-color: rgba(244, 184, 96, 0.28);
+  background: rgba(244, 184, 96, 0.08);
+  color: #ffd79d;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.moon-card,
+.card,
+.metric,
+.quote,
+.code-card,
+.path-card,
+.phase-card,
+.principle,
+.timeline,
+.panel,
+.accent-box,
+.closing-statement {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+}
+
+.paper .card,
+.paper .metric,
+.paper .quote,
+.paper .code-card,
+.paper .path-card,
+.paper .phase-card,
+.paper .principle,
+.paper .timeline,
+.paper .panel,
+.paper .accent-box {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(22, 33, 50, 0.1);
+}
+
+.moon-card,
+.card,
+.metric,
+.quote,
+.code-card,
+.path-card,
+.phase-card,
+.principle,
+.timeline,
+.panel,
+.accent-box,
+.closing-statement {
+  padding: 18px 20px;
+}
+
+.moon-card {
+  padding: 26px;
+  background:
+    radial-gradient(circle at 72% 26%, rgba(244, 184, 96, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(15, 31, 58, 0.92), rgba(9, 18, 34, 0.92));
+  position: relative;
+  overflow: hidden;
+}
+
+.moon-card::after {
+  content: "";
+  position: absolute;
+  top: 26px;
+  right: 30px;
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 35%, rgba(255,255,255,0.7), rgba(244, 184, 96, 0.9) 44%, rgba(244,184,96,0.1) 70%, transparent 72%);
+  opacity: 0.8;
+  box-shadow: 0 0 44px rgba(244,184,96,0.26);
+}
+
+.moon-card h2,
+.card h3,
+.phase-card h3,
+.principle h3,
+.timeline h3,
+.path-card h3 {
+  margin: 0 0 10px;
+  font: 800 18px/1.25 "Manrope", "Noto Sans SC", sans-serif;
+  color: var(--ink);
+}
+
+.moon-card p,
+.card p,
+.phase-card p,
+.principle p,
+.timeline p,
+.path-card p,
+.panel p,
+.accent-box p,
+.closing-statement p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.case-result p,
+.case-section p {
+  color: var(--muted);
+}
+
+.paper .card p,
+.paper .phase-card p,
+.paper .principle p,
+.paper .timeline p,
+.paper .path-card p,
+.paper .panel p,
+.paper .accent-box p {
+  color: var(--ink-2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-k,
+.phase-card .phase-k,
+.principle .num {
+  font: 800 32px/1 "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.metric-k,
+.phase-card .phase-k {
+  color: var(--accent);
+}
+
+.paper .metric-k,
+.paper .phase-card .phase-k {
+  color: #885f29;
+}
+
+.principle .num {
+  margin-bottom: 12px;
+  color: var(--accent-2);
+}
+
+.paper .principle .num {
+  color: #4f7ea0;
+}
+
+.metric-l {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.paper .metric-l {
+  color: var(--ink-2);
+}
+
+.label {
+  margin-bottom: 8px;
+  font: 800 10px/1.2 "Manrope", sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.paper .label {
+  color: #4f7ea0;
+}
+
+.quote {
+  border-left: 4px solid var(--accent);
+  background: rgba(255,255,255,0.03);
+}
+
+.quote p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.line-list,
+.mini-list,
+.bullets,
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line-list li,
+.mini-list li,
+.bullets li {
+  padding: 9px 0 9px 18px;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.66;
+}
+
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li {
+  border-bottom-color: rgba(22, 33, 50, 0.08);
+  color: var(--ink-2);
+}
+
+.line-list li:last-child,
+.mini-list li:last-child,
+.bullets li:last-child {
+  border-bottom: none;
+}
+
+.line-list li::before,
+.mini-list li::before,
+.bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 17px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.paper .steps li {
+  border-bottom-color: rgba(22, 33, 50, 0.08);
+}
+
+.steps li:last-child {
+  border-bottom: none;
+}
+
+.step-n {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(244,184,96,0.14);
+  color: var(--accent);
+  font: 800 14px/1 "Manrope", sans-serif;
+}
+
+.steps strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.steps span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.66;
+}
+
+.paper .steps span {
+  color: var(--ink-2);
+}
+
+.code-card pre {
+  margin: 0;
+  font: 500 12px/1.72 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-wrap;
+  color: #dbe8ff;
+}
+
+.paper .code-card pre {
+  color: #2a3a4f;
+}
+
+.timeline {
+  position: relative;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 56px;
+  bottom: 20px;
+  width: 1px;
+  background: rgba(255,255,255,0.12);
+}
+
+.paper .timeline::before {
+  background: rgba(22,33,50,0.12);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 40px;
+  margin-top: 18px;
+}
+
+.timeline-item:first-of-type {
+  margin-top: 0;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 7px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(244,184,96,0.12);
+}
+
+.timeline-date {
+  margin-bottom: 4px;
+  color: var(--accent);
+  font: 800 11px/1.3 "Manrope", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.paper .timeline-date {
+  color: #8b632c;
+}
+
+.path-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.path-table th,
+.path-table td {
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.paper .path-table th,
+.paper .path-table td {
+  border-bottom-color: rgba(22,33,50,0.08);
+}
+
+.path-table th {
+  width: 26%;
+  color: var(--muted-2);
+  font: 800 11px/1.4 "Manrope", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.paper .path-table th {
+  color: #707b8d;
+}
+
+.path-table td {
+  color: var(--text);
+}
+
+.paper .path-table td {
+  color: var(--ink);
+}
+
+.bad {
+  border-color: rgba(255,144,120,0.28);
+}
+
+.good {
+  border-color: rgba(144,213,165,0.28);
+}
+
+.bad .label {
+  color: var(--danger);
+}
+
+.good .label {
+  color: var(--accent-3);
+}
+
+.closing-statement {
+  padding: 28px;
+  border-radius: 28px;
+  border: 1px solid rgba(244,184,96,0.22);
+  background:
+    radial-gradient(circle at 80% 18%, rgba(244,184,96,0.16), transparent 26%),
+    linear-gradient(180deg, rgba(17,32,58,0.96), rgba(9,18,34,0.96));
+}
+
+.closing-statement h2 {
+  margin: 0 0 12px;
+  font: 800 38px/1.05 "Manrope", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+  max-width: 12ch;
+}
+
+.source {
+  color: var(--muted-2);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.case-card {
+  min-height: 100%;
+}
+
+.case-result {
+  margin-bottom: 10px;
+}
+
+.case-metric {
+  font: 800 40px/1 "Manrope", sans-serif;
+  letter-spacing: -0.05em;
+  color: var(--accent);
+}
+
+.paper .case-metric {
+  color: #885f29;
+}
+
+.case-result p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.case-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(22, 33, 50, 0.08);
+}
+
+.frame:not(.paper) .case-section {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.case-head {
+  margin-bottom: 6px;
+  font: 800 10px/1.2 "Manrope", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.paper .case-head {
+  color: #707b8d;
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  flex: 1;
+}
+
+.flow-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(22, 33, 50, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 18px 20px;
+}
+
+.flow-head {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(22, 33, 50, 0.08);
+}
+
+.flow-head h3 {
+  margin: 0 0 6px;
+  font: 800 20px/1.25 "Manrope", "Noto Sans SC", sans-serif;
+  color: var(--ink);
+}
+
+.flow-head p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.68;
+}
+
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flow-step {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(22, 33, 50, 0.08);
+  position: relative;
+}
+
+.flow-step:last-child {
+  border-bottom: none;
+}
+
+.flow-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(79, 126, 160, 0.12);
+  color: #4f7ea0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 800 14px/1 "Manrope", sans-serif;
+}
+
+.flow-step strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.flow-step p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.66;
+}
+
+.flow-note {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(22, 33, 50, 0.08);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* Unified dark theme across all slides */
+.frame.paper {
+  background:
+    linear-gradient(180deg, rgba(255, 247, 234, 0.04), transparent 22%),
+    linear-gradient(180deg, rgba(9, 19, 37, 0.94) 0%, rgba(6, 12, 24, 0.9) 100%);
+  color: var(--text);
+}
+
+.frame.paper::before {
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.paper .topbar {
+  border-bottom-color: var(--line);
+}
+
+.paper .eyebrow {
+  color: var(--accent);
+}
+
+.paper .title {
+  color: var(--text);
+}
+
+.paper .meta {
+  color: var(--muted-2);
+}
+
+.paper .card,
+.paper .metric,
+.paper .quote,
+.paper .code-card,
+.paper .path-card,
+.paper .phase-card,
+.paper .principle,
+.paper .timeline,
+.paper .panel,
+.paper .accent-box {
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+
+.paper .card p,
+.paper .phase-card p,
+.paper .principle p,
+.paper .timeline p,
+.paper .path-card p,
+.paper .panel p,
+.paper .accent-box p {
+  color: var(--muted);
+}
+
+.paper .metric-k,
+.paper .phase-card .phase-k,
+.paper .case-metric {
+  color: var(--accent);
+}
+
+.paper .principle .num,
+.paper .label {
+  color: var(--accent-2);
+}
+
+.paper .metric-l,
+.paper .case-head,
+.paper .path-table th {
+  color: var(--muted-2);
+}
+
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li,
+.paper .steps span {
+  color: var(--muted);
+}
+
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li,
+.paper .steps li,
+.paper .path-table th,
+.paper .path-table td {
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+
+.paper .code-card pre {
+  color: #dbe8ff;
+}
+
+.paper .timeline::before {
+  background: rgba(255,255,255,0.12);
+}
+
+.paper .timeline-date {
+  color: var(--accent);
+}
+
+.paper .path-table td {
+  color: var(--text);
+}
+
+/* Unified light theme */
+html,
+body {
+  background:
+    radial-gradient(circle at top left, rgba(143, 210, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 85% 18%, rgba(244, 184, 96, 0.12), transparent 28%),
+    linear-gradient(180deg, #f6f0e4 0%, #f3ecdf 58%, #efe7d8 100%);
+  color: var(--ink);
+}
+
+body::before {
+  opacity: 0.18;
+}
+
+.slide::after {
+  color: #7b7486;
+}
+
+.frame,
+.frame.paper {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0) 22%),
+    linear-gradient(180deg, #f7f1e6 0%, #f2eadc 100%);
+  color: var(--ink);
+  border-color: rgba(22, 33, 50, 0.1);
+}
+
+.frame::before,
+.frame.paper::before {
+  border-color: rgba(22, 33, 50, 0.08);
+}
+
+.topbar,
+.paper .topbar {
+  border-bottom-color: rgba(22, 33, 50, 0.1);
+}
+
+.eyebrow,
+.paper .eyebrow {
+  color: #88622f;
+}
+
+.title,
+.paper .title {
+  color: var(--ink);
+}
+
+.meta,
+.paper .meta {
+  color: #6f7787;
+}
+
+.hero-sub,
+.moon-card p,
+.card p,
+.case-result p,
+.case-section p,
+.phase-card p,
+.principle p,
+.timeline p,
+.path-card p,
+.panel p,
+.accent-box p,
+.closing-statement p,
+.line-list li,
+.mini-list li,
+.bullets li,
+.steps span,
+.metric-l {
+  color: var(--ink-2);
+}
+
+.pill {
+  border-color: rgba(22, 33, 50, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+}
+
+.kicker {
+  border-color: rgba(136, 98, 47, 0.18);
+  background: rgba(244, 184, 96, 0.12);
+  color: #7b5826;
+}
+
+.moon-card,
+.card,
+.metric,
+.quote,
+.code-card,
+.path-card,
+.phase-card,
+.principle,
+.timeline,
+.panel,
+.accent-box,
+.closing-statement,
+.paper .card,
+.paper .metric,
+.paper .quote,
+.paper .code-card,
+.paper .path-card,
+.paper .phase-card,
+.paper .principle,
+.paper .timeline,
+.paper .panel,
+.paper .accent-box {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(22, 33, 50, 0.1);
+}
+
+.moon-card::after {
+  opacity: 0.38;
+}
+
+.quote {
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.quote p {
+  color: var(--ink);
+}
+
+.label,
+.paper .label {
+  color: #4f7ea0;
+}
+
+.metric-k,
+.phase-card .phase-k,
+.case-metric,
+.paper .metric-k,
+.paper .phase-card .phase-k,
+.paper .case-metric {
+  color: #885f29;
+}
+
+.principle .num,
+.paper .principle .num {
+  color: #4f7ea0;
+}
+
+.line-list li,
+.mini-list li,
+.bullets li,
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li,
+.steps li,
+.paper .steps li,
+.path-table th,
+.path-table td,
+.paper .path-table th,
+.paper .path-table td {
+  border-bottom-color: rgba(22, 33, 50, 0.08);
+}
+
+.path-table th,
+.paper .path-table th,
+.case-head,
+.paper .case-head {
+  color: #707b8d;
+}
+
+.path-table td,
+.paper .path-table td {
+  color: var(--ink);
+}
+
+.path-card,
+.path-card h3,
+.path-card p,
+.path-card li,
+.path-card strong,
+.accent-box,
+.accent-box p,
+.accent-box strong {
+  color: var(--ink);
+}
+
+.path-card p,
+.path-card li,
+.accent-box p {
+  color: var(--ink-2);
+}
+
+.code-card pre,
+.paper .code-card pre {
+  color: #2a3a4f;
+}
+
+.timeline::before,
+.paper .timeline::before {
+  background: rgba(22, 33, 50, 0.12);
+}
+
+.timeline-date,
+.paper .timeline-date {
+  color: #8b632c;
+}
+
+.accent-box,
+.paper .accent-box {
+  background: rgba(143, 210, 255, 0.12);
+  border-color: rgba(79, 126, 160, 0.16);
+}
+
+.closing-statement {
+  border-color: rgba(136, 98, 47, 0.16);
+  background:
+    radial-gradient(circle at 82% 18%, rgba(244, 184, 96, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,0.76), rgba(250,245,237,0.9));
+}
+
+.closing-statement h2 {
+  color: var(--ink);
+}
+
+.nav {
+  border-color: rgba(22, 33, 50, 0.1);
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+}
+
+.nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  background: rgba(7,12,24,0.62);
+  color: var(--text);
+  font: 700 26px/1 "Manrope", sans-serif;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.nav.prev { left: 16px; }
+.nav.next { right: 16px; }
+
+.progress {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  z-index: 32;
+  transition: width 0.25s ease;
+}
+
+/* Minimal UI cleanup */
+body::before,
+.frame::before,
+.frame.paper::before,
+.moon-card::after,
+.timeline::before,
+.paper .timeline::before {
+  display: none;
+}
+
+html,
+body {
+  background: #f5efe4;
+}
+
+.frame,
+.frame.paper {
+  background: rgba(249, 245, 238, 0.96);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(64, 48, 24, 0.06);
+}
+
+.moon-card,
+.card,
+.metric,
+.quote,
+.code-card,
+.path-card,
+.phase-card,
+.principle,
+.timeline,
+.panel,
+.accent-box,
+.closing-statement,
+.flow-card {
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(22, 33, 50, 0.06);
+}
+
+.topbar,
+.paper .topbar,
+.case-section,
+.frame:not(.paper) .case-section,
+.flow-head,
+.flow-step,
+.flow-note,
+.path-table th,
+.path-table td,
+.paper .path-table th,
+.paper .path-table td,
+.line-list li,
+.mini-list li,
+.bullets li,
+.steps li,
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li,
+.paper .steps li {
+  border: none;
+}
+
+.quote {
+  border-left: none;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.line-list li,
+.mini-list li,
+.bullets li,
+.paper .line-list li,
+.paper .mini-list li,
+.paper .bullets li {
+  padding: 6px 0 6px 18px;
+}
+
+.steps li,
+.paper .steps li {
+  padding: 6px 0;
+}
+
+.timeline-item {
+  padding-left: 0;
+  margin-top: 16px;
+}
+
+.timeline-item::before {
+  display: none;
+}
+
+.flow-head {
+  margin-bottom: 10px;
+  padding-bottom: 0;
+}
+
+.flow-step {
+  padding: 10px 0;
+}
+
+.flow-note {
+  margin-top: 10px;
+  padding-top: 0;
+}
+
+.path-table th,
+.path-table td {
+  padding: 9px 0;
+}
+
+.accent-box,
+.paper .accent-box {
+  background: rgba(247, 249, 252, 0.92);
+  border-color: rgba(22, 33, 50, 0.05);
+}
+
+.nav {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(22, 33, 50, 0.08);
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.zoomable {
+  cursor: zoom-in;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(17, 20, 28, 0.82);
+  z-index: 100;
+}
+
+.lightbox.open {
+  display: flex;
+}
+
+.lightbox-inner {
+  max-width: min(92vw, 1600px);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lightbox img {
+  width: 100%;
+  height: auto;
+  max-height: calc(92vh - 40px);
+  object-fit: contain;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.lightbox-caption {
+  color: #f4f0e8;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .hero-grid,
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .case-grid,
+  .split-hero,
+  .phase-grid,
+  .path-grid,
+  .principles,
+  .closing,
+  .stats,
+  .compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  html, body {
+    height: auto;
+    overflow: auto;
+  }
+
+  .deck {
+    height: auto;
+    padding: 14px 0 40px;
+  }
+
+  .slide,
+  .slide.active {
+    position: relative;
+    display: block !important;
+    padding: 10px 14px;
+  }
+
+  .frame {
+    min-height: auto;
+    height: auto;
+  }
+
+  .nav,
+  .progress {
+    display: none !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    overflow: visible;
+    background: white;
+  }
+
+  .deck {
+    height: auto;
+  }
+
+  .slide,
+  .slide.active {
+    position: relative;
+    display: block !important;
+    padding: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .nav,
+  .progress {
+    display: none !important;
+  }
+
+  .frame {
+    min-height: 100vh;
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide active" data-n="1">
+    <div class="frame">
+      <div class="topbar">
+        <div></div>
+      </div>
+      <div class="body">
+        <div class="stack" style="gap:24px;">
+          <div style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:180px;">
+            <h1 class="hero-title" style="max-width:none; text-align:center; margin:0;">harness engineering <span>for 0-1 production</span></h1>
+            <p class="meta" style="margin-top:14px; font-size:15px;">Tianshun Yao @April 2026</p>
+          </div>
+          <div class="moon-card">
+            <h2>Agenda</h2>
+            <div class="grid-2" style="margin-top:18px;">
+              <div class="card">
+                <div class="label">01</div>
+                <h3>为什么现在值得讲 Harness Engineering</h3>
+                <p>先看几支团队为什么都在模型之外的工程系统上拉开差距。</p>
+              </div>
+              <div class="card">
+                <div class="label">02</div>
+                <h3>Harness 到底是什么</h3>
+                <p>把它和 Prompt、Context 区分开，再用四层拆分说明什么属于 harness。</p>
+              </div>
+              <div class="card">
+                <div class="label">03</div>
+                <h3>Agent 为什么会出错</h3>
+                <p>主要看三类失败模式：上下文不清楚、没有验证手段、以及系统随时间漂移。</p>
+              </div>
+              <div class="card">
+                <div class="label">04</div>
+                <h3>人的角色怎么变化</h3>
+                <p>最后回到工程师本身：哪些事可以交给 agent，哪些判断仍然必须由人来完成。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="2">
+    <div class="frame paper">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">开场</p>
+          <h2 class="title">同一时期，几支团队用相近的方法获得了不成比例的产出</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="case-grid">
+          <div class="card case-card">
+            <div class="label">OpenAI · Frontier Team</div>
+            <h3>OpenAI 的 Harness Engineering 最佳实践</h3>
+            <div class="case-result">
+              <div class="case-metric">人工代码 0 行</div>
+              <p>5 个月产出 100 万行生产代码，初始只有 3 名工程师，约 1,500 个 PR。</p>
+            </div>
+            <div class="case-section">
+              <div class="case-head">具体做法</div>
+              <ul class="mini-list">
+                <li>用 <strong>AGENTS.md</strong> 做项目规则索引，把架构约定、命名规范、验证要求写成 agent 默认会读到的上下文。</li>
+                <li>让 <strong>agent review agent</strong> 审查 PR，不只是让 agent 写代码，还让 agent 参与 review 循环。</li>
+                <li>把架构约束和持续清理熵的任务交给后台 agent 长期运行，而不是依赖人工记忆。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card case-card">
+            <div class="label">Ghostty / Hashimoto</div>
+            <h3>转变点是“任务能否被验证”</h3>
+            <div class="case-result">
+              <div class="case-metric">直接合入</div>
+              <p>把截图交给模型生成 SwiftUI 组件，轻改后可以直接进入主分支。</p>
+            </div>
+            <div class="case-section">
+              <div class="case-head">具体做法</div>
+              <ul class="mini-list">
+                <li>把 <strong>设计截图</strong> 直接当输入，让模型围绕一个非常具体的目标去实现 UI，而不是抽象描述需求。</li>
+                <li>优先挑那些 <strong>验证标准清晰</strong> 的任务交给 agent，例如“长得像不像”“测试过不过”。</li>
+                <li>出错后不是只修输出，而是补 rule file 和小工具，让下一次同类任务更稳。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card case-card">
+            <div class="label">LangChain · Deep Agents CLI</div>
+            <h3>最大涨幅来自 middleware 和 checklist</h3>
+            <div class="case-result">
+              <div class="case-metric">+13.7</div>
+              <p>Terminal Bench 2.0 从 52.8% 提升到 66.5%，模型本身没有变化。</p>
+            </div>
+            <div class="case-section">
+              <div class="case-head">具体做法</div>
+              <ul class="mini-list">
+                <li>没有换模型，而是重写了 <strong>system prompt + middleware</strong> 这一层运行环境。</li>
+                <li>加入 <strong>PreCompletionChecklist</strong>，让 agent 在结束前强制检查“该看的都看了、该跑的都跑了”。</li>
+                <li>把规划、执行、验证拆开，形成更稳定的 <strong>reasoning sandwich</strong>，减少“做完但没验证”的情况。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card case-card">
+            <div class="label">DozyTale · 0→1 Production</div>
+            <h3>1 个月完成脑暴、开发、宣发和迭代</h3>
+            <div class="case-result">
+              <div class="case-metric">7.2 万行</div>
+              <p>工程代码约 72,573 行，覆盖 Flutter 前端、FastAPI 后端、管理台和自动化脚本，不是一次性的 demo。</p>
+            </div>
+            <div class="case-section">
+              <div class="case-head">具体做法</div>
+              <ul class="mini-list">
+                <li>先把 <strong>PRD、APP FLOW、TECH STACK、AGENTS.md / CLAUDE.md</strong> 补齐，让 vibecoding 从第一天起就在明确边界里工作。</li>
+                <li>把真实问题沉淀成 <strong>协议、脚本、日志和检查项</strong>，例如 phase 切换、队列水位、断连日志、回归修复，而不是每次靠人重新解释。</li>
+                <li>用 <strong>RELEASE.md、标注平台、链路追踪和持续迭代</strong> 把“脑暴出来的想法”推进成可以上线、可以宣发、还能继续修的 production 系统。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="quote">
+          <p>这些案例的共同变量，不是换了某个神奇模型，而是模型外的工程系统。这个系统就是 Harness。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="3">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第一部分 · 什么是 Harness</p>
+          <h2 class="title">AI 工程的三个阶段：Prompt、Context、Harness，优化对象各不相同</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-3">
+          <div class="card">
+            <div class="label">2023–2024</div>
+            <h3>Prompt Engineering</h3>
+            <p>优化一次调用里的措辞、few-shot、结构化输出。问题是：每次对话独立，错误难以积累成系统改进。</p>
+          </div>
+          <div class="card">
+            <div class="label">2025</div>
+            <h3>Context Engineering</h3>
+            <p>优化进入 context window 的信息质量，例如 RAG、记忆、目录结构、工具结果。它提升单次任务成功率，但仍不解决“下次别再犯”。</p>
+          </div>
+          <div class="card">
+            <div class="label">2025–</div>
+            <h3>Harness Engineering</h3>
+            <p>优化 agent 长期工作的运行环境，包括规则、工具、约束、反馈环和 evals。重点从“这次答对”转向“系统越来越可靠”。</p>
+          </div>
+        </div>
+        <div class="timeline">
+          <h3>奠基性文章时间线</h3>
+          <div class="timeline-item">
+            <div class="timeline-date">2024-12 · Anthropic</div>
+            <strong>Building Effective Agents</strong>
+            <p>定义 workflow 与 agent，强调“从最简单方案开始”。</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2025 · Karpathy / Shopify</div>
+            <strong>Context Engineering</strong>
+            <p>把上下文管理从 prompt 里独立出来。</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-date">2026-02 · Hashimoto</div>
+            <strong>首次明确命名 Harness Engineering</strong>
+            <p>Agent = Model + Harness，结论来自真实产品开发，而不是纯理论。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="4">
+    <div class="frame paper">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第一部分 · 什么是 Harness</p>
+          <h2 class="title">Agent = Model + Harness，Harness 是模型之外让 agent 可靠运行的全部基础设施</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <div class="label">Four Layers</div>
+          <h3>一个最实用的拆分方式</h3>
+          <p>如果把 Harness Engineering 放到 vibecoding 场景里看，核心不是“再写一个更长的 prompt”，而是把 agent 的工作环境拆成四层，分别解决信息不足、执行不稳、结果不可验证、系统持续漂移这四类问题。</p>
+          <ul class="mini-list">
+            <li><strong>Context</strong>：行动前给信息。包括规则文件、目录说明、模块边界、任务背景和按需加载的局部文档。它解决的是 agent 不知道系统长什么样、因此总在错误心智模型上行动的问题。</li>
+            <li><strong>Tools</strong>：把动作做实。包括脚本、linter、截图、测试运行器、格式化工具和小型自动化。它解决的是 agent 虽然“知道该做什么”，但没有稳定执行面的情况。</li>
+            <li><strong>Feedback Loops</strong>：行动后看结果。包括 checklist、测试、agent review、截图比对、部署验证和 evals。它解决的是 vibecoding 里最常见的假阳性: 代码改了，但没人知道它到底能不能工作。</li>
+            <li><strong>Entropy Management</strong>：防止系统越做越乱。包括把 harness 放进 git、持续维护规则文件、把常见失败沉淀成脚本或检查项。它解决的是项目一开始很好用，后来 context 过时、规则失效、agent 质量越来越不稳定的问题。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="5">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第二部分 · Agent 为什么出错</p>
+          <h2 class="title">失败模式 1：上下文不清楚。在 kick-off 和后续开发里，模型会以两种不同方式把系统带偏</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-2">
+          <div class="card">
+            <div class="label">Stage 1 · Kick-off</div>
+            <h3>开场描述不清，做出来的 app 可能从一开始就不是你想要的东西</h3>
+            <ul class="bullets">
+              <li>如果产品目标、用户路径、技术边界描述不清，模型会很快补齐细节，但补齐出来的是它理解的产品，不是你真正想做的产品。</li>
+              <li>0→1 阶段最怕的不是写得慢，而是方向一开始就偏了，后面越做越像在错误前提上加速。</li>
+              <li>做法不是立刻进入实现，而是先用 <strong>plan mode</strong> 和模型反复讨论，让模型持续 challenge 想法、补缺口、暴露歧义。</li>
+              <li>直到拿到可执行的上下文基座，也就是下面这 6 份文档，再进入大规模 vibecoding。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="label">Stage 2 · Build / Debug</div>
+            <h3>后续描述不清，模型就修不好 bug，也很难在已有架构上稳定加功能</h3>
+            <ul class="bullets">
+              <li>一旦进入新功能开发和 debug，问题就不再是“要做什么”，而是“现在这个系统到底是怎么工作的”。</li>
+              <li>如果上下文过时、边界模糊、文档没有维护，模型就会修不准 bug，或者在已有架构上加出新的耦合和回归。</li>
+              <li>如果任务涉及前端，新功能和 debug 最好都带上 <strong>截图</strong>；视觉现状、交互状态和 bug 表现只靠文字描述通常不够，模型更容易误解你真正想修的东西。</li>
+              <li>所以这 6 份文档不是 kick-off 一次性产物，而是后续开发过程中必须持续更新和维护的工作资产。</li>
+              <li>真正有效的 context 不是“写过”，而是每次关键改动后都还和当前系统保持一致。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="path-grid">
+          <div class="path-card">
+            <div class="label">0→1 Production Example · DozyTale</div>
+            <h3>在 DozyTale 里，我们把 context 落成了一组持续维护的项目文档</h3>
+            <table class="path-table">
+              <tr><th>PRD</th><td><code>docs/product-spec.md</code>：定义产品目标、核心体验和完成标准，避免一开始就把 app 做偏。</td></tr>
+              <tr><th>APP FLOW</th><td><code>doc/guest-mode-spec.md</code>、<code>doc/floating-mini-player-spec.md</code>：把关键页面、交互路径和用户流程写清楚。</td></tr>
+              <tr><th>TECH STACK</th><td><code>CLAUDE.md</code>：写明 Flutter + FastAPI + Vue Admin、部署方式、常用命令和关键耦合点。</td></tr>
+              <tr><th>GUIDELINES</th><td><code>AGENTS.md</code>、<code>CLAUDE.md</code>：给出开发流程、目录入口、发布日志和防回归规则。</td></tr>
+              <tr><th>STRUCTURE</th><td><code>bugfix.md</code>、<code>docs/observability-plan.md</code>：记录重点保护文件、已知风险和系统边界。</td></tr>
+              <tr><th>PLAN</th><td><code>doc/differentiation-brainstorm.md</code>、<code>doc/differentiation-features-plan.md</code>、<code>docs/refactor-practice-report.md</code>：把 brainstorm、功能推进和重构计划持续落盘。</td></tr>
+            </table>
+            <p style="margin-top:12px;">这些文档在 kick-off 阶段用来把想法聊透，在后续新功能开发和 debug 阶段则用来维持上下文新鲜度，避免模型只凭聊天历史和局部代码做判断。</p>
+          </div>
+          <div class="path-card">
+            <div class="label">OpenAI Example</div>
+            <h3>把“看不见就不存在”的知识编码进代码库</h3>
+            <div class="card code-card" style="padding:16px 18px; margin:12px 0 10px; background:#fbfcfe; border:1px solid rgba(22,33,50,0.08); max-height:360px; overflow:auto;">
+              <pre style="white-space:pre; min-width:max-content;">AGENTS.md
+ARCHITECTURE.md
+docs/
+├── design-docs/
+│   ├── index.md
+│   ├── core-beliefs.md
+│   └── ...
+├── exec-plans/
+│   ├── active/
+│   ├── completed/
+│   └── tech-debt-tracker.md
+├── generated/
+│   └── db-schema.md
+├── product-specs/
+│   ├── index.md
+│   ├── new-user-onboarding.md
+│   └── ...
+├── references/
+│   ├── design-system-reference-llms.txt
+│   ├── nixpacks-llms.txt
+│   ├── uv-llms.txt
+│   └── ...
+├── DESIGN.md
+├── FRONTEND.md
+├── PLANS.md
+└── PRODUCT_SENSE.md</pre>
+            </div>
+            <ul class="mini-list" style="margin-top:6px;">
+              <li style="border-bottom:none; padding-bottom:6px;">OpenAI 把分散在 Slack、Google Doc 和人脑里的知识，重新整理进仓库里的文档结构。</li>
+              <li style="border-bottom:none; padding-top:6px;"><code>AGENTS.md</code> 只做入口，真正的产品规范、执行计划、技术债和参考资料都拆进可版本化的文档树。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="6">
+    <div class="frame paper">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第二部分 · Agent 为什么出错</p>
+          <h2 class="title">失败模式 2：缺乏验证手段。没有 Sensor，Agent 无法知道生成的代码到底能不能部署</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="card">
+          <div class="label">Sensor</div>
+          <h3>有效的 feedback loop，至少要同时覆盖两类反馈</h3>
+          <table class="path-table">
+            <tr><th>Computational</th><td>确定性、快速、可频繁运行。适合承载测试、类型检查、linter、自定义脚本这类每次改动后都能自动触发的检查。</td></tr>
+            <tr><th>Inferential</th><td>语义判断，慢但更接近真实质量。适合承载截图检查、browser use、AI review、LLM as Judge 这类“代码对了但体验不一定对”的验证。</td></tr>
+          </table>
+        </div>
+        <div class="path-grid">
+          <div class="path-card">
+            <div class="label">OpenAI Example</div>
+            <h3>把 UI 和 observability 直接暴露给 Codex</h3>
+            <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; margin:12px 0 10px;">
+              <img class="zoomable" src="https://images.ctfassets.net/kftzwdyauwt9/1Gu58eNlqDEuITmbqJDmq9/1e2e62f7e15fb16d2da0da5407240564/fig_1__codex_drives_the_app_.png?fm=webp&q=90&w=3840" alt="OpenAI: Codex drives the app with Chrome DevTools MCP to validate its work" style="width:100%; height:260px; object-fit:contain; display:block; border-radius:18px; border:1px solid rgba(22,33,50,0.08); background:#fff;">
+              <img class="zoomable" src="https://images.ctfassets.net/kftzwdyauwt9/4Xr18TZ5G4Bh8zIgsTFIVK/f7ae689ddd8c31664e39d809b0973425/OAI_Harness_engineering_Giving_Codex_a_full_observability_stack_desktop-light__1_.svg?q=90&w=3840" alt="OpenAI: Giving Codex a full observability stack" style="width:100%; height:260px; object-fit:contain; display:block; border-radius:18px; border:1px solid rgba(22,33,50,0.08); background:#fff;">
+            </div>
+            <ul class="mini-list">
+              <li>一条验证线是让 Codex 直接驱动 DevTools，执行 UI 路径、做前后截图、修复后反复回放，直到结果干净为止。</li>
+              <li>另一条验证线是把日志、指标和 traces 直接开放给 Codex 查询，让它能基于运行时信号定位问题，而不是只靠 diff 猜。</li>
+            </ul>
+          </div>
+          <div class="path-card">
+            <div class="label">0→1 Production Example · DozyTale</div>
+            <h3>在 DozyTale 里，我们把 feedback loop 做成三层</h3>
+            <ul class="mini-list">
+              <li><strong>现象</strong>：只看代码 diff 或本地一两个函数返回值，无法判断一次 vibecoding 改动到底有没有真的把产品链路修好。</li>
+              <li><strong>原因</strong>：`DozyTale` 不是单点函数，而是前后端协同的 production 系统；如果 feedback loop 只停留在“代码看起来对”，很多问题会留到真实使用阶段才暴露。</li>
+              <li><strong>怎么做</strong>：第一层是 <strong>linter 验证</strong>，每一次对话后自动执行。第二层是 <strong>服务 call API 验证</strong>，可手动触发，也可在每次 commit 后按改动文件映射测试项，用 pytest + httpx 做回归或补新测试。第三层是 <strong>前端 browser use 验证</strong>，同样支持手动或增量触发；`Argus` 维护 <code>.argus/catalog.md</code>，把改动映射到用户路径，再执行 Playwright，并把截图和报告写回 <code>.argus/reports</code>。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="7">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第二部分 · Agent 为什么出错</p>
+          <h2 class="title">失败模式 3：随着开发推进，代码库发生架构漂移，context 质量下降，agent 越来越容易出错</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-2">
+          <div class="card bad">
+            <div class="label">Drift Loop</div>
+            <h3>代码越乱，agent 越难理解；agent 越难理解，越会继续制造混乱</h3>
+            <ul class="bullets">
+              <li>修了 A 又坏了 B。</li>
+              <li>局部补丁越来越多，系统整体越来越不可读。</li>
+              <li>下一次任务看到的是更差的 context。</li>
+            </ul>
+          </div>
+          <div class="card good">
+            <div class="label">Countermeasures</div>
+            <h3>把防漂移做成日常系统，而不是事后大修</h3>
+            <ul class="bullets">
+              <li>规则文件和 evals 一起版本管理。</li>
+              <li>把经常回归的问题变成锁定测试。</li>
+              <li>持续清理熵，而不是等系统坏透了再重构。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="path-grid">
+          <div class="path-card">
+            <div class="label">OpenAI Example</div>
+            <h3>用显式架构边界和后台清理来对抗漂移</h3>
+            <img class="zoomable" src="https://images.ctfassets.net/kftzwdyauwt9/4Rlip1H3T9apPlSmWs7Wr8/7708c176bfbe11951e06ad8e2b83bf01/OAI_Harness_engineering_Layered_domain_architecture_with_explicit_cross-cutting_boundries_desktop-light.png?fm=webp&q=90&w=1600" alt="OpenAI: Layered domain architecture with explicit cross-cutting boundaries" style="width:100%; max-height:320px; object-fit:contain; display:block; margin:12px 0 10px; border-radius:18px; border:1px solid rgba(22,33,50,0.08); background:#fff;">
+            <ul class="mini-list">
+              <li>OpenAI 先把依赖方向固定下来：从底层类型、配置、数据访问，到服务、运行时和 UI，只能单向依赖。</li>
+              <li>认证、连接器、遥测和 feature flags 这类通用能力，不允许散落在各层里，而是统一从一个入口接入。</li>
+              <li>这些规则再交给自定义 lint 和结构测试执行，例如结构化日志、schema / type 命名、文件大小限制和平台可靠性要求。</li>
+              <li>原文给的两条黄金原则也很具体：优先复用共享 utility；不要用 “YOLO 式” 方法探测数据，尽量在边界校验，或直接依赖 typed SDK。</li>
+            </ul>
+          </div>
+          <div class="path-card">
+            <div class="label">0→1 Production Example · DozyTale</div>
+            <h3>在 DozyTale 里，我们用 `debug.md` 约束修复范围</h3>
+            <ul class="mini-list">
+              <li><strong>现象</strong>：0→1 阶段最容易出现的不是“一个 bug 修不掉”，而是修了问题 A，顺手又把问题 B 带回来，代码越改越散。</li>
+              <li><strong>原因</strong>：vibecoding 很容易为了快速修通当前问题，顺手改动周边逻辑；如果没有约束修复范围和回归保护，架构漂移会越来越快。</li>
+              <li><strong>怎么做</strong>：我们在项目里专门放了一个 <code>debug.md</code>，把调试工作限制成“先理解问题、按 spec 精准修复、每次修完都验证、不要顺手重构周边代码、不要改无关文件”。同时在 <code>bugfix.md</code> / 项目规则里维护重点保护文件和已修复约束，要求修改这些文件前先读历史修复意图，防止修了 A 又把旧问题带回来。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="8">
+    <div class="frame paper">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第三部分 · 人的角色</p>
+          <h2 class="title">人的角色从“修补 agent 输出”转向“改进产生输出的系统”</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-3">
+          <div class="card">
+            <div class="label">Old Mode</div>
+            <h3>看输出、挑错、手工修补</h3>
+            <p>每次都在对付同类错误，系统本身并没有变得更好。</p>
+          </div>
+          <div class="card">
+            <div class="label">New Mode</div>
+            <h3>把错误变成 rule、tool、check</h3>
+            <p>下次再遇到同类问题时，不再依赖人工记忆，而依赖系统自动约束和自动验证。</p>
+          </div>
+          <div class="card">
+            <div class="label">What This Means</div>
+            <h3>工程师在做更高杠杆的事</h3>
+            <p>你不是少写代码，而是在写让未来很多次代码生成都更可靠的系统。</p>
+          </div>
+        </div>
+        <div class="quote">
+          <p>最有价值的动作，不是“把这次错改对”，而是“让系统以后少犯这类错”。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="9">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">第三部分 · 人的角色</p>
+          <h2 class="title">Agent 当前明确不擅长的几类工作，恰好也是 Harness Engineering 最需要人的部分</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-2">
+          <div class="card">
+            <div class="label">Still Hard For Agents</div>
+            <ul class="bullets">
+              <li>真正的 0→1 创新方向判断。</li>
+              <li>大型未知代码库的深度重构。</li>
+              <li>没有明确正确答案的优先级和取舍。</li>
+              <li>Harness 本身的设计：该加什么规则、什么算通过。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="label">Why Humans Stay Central</div>
+            <ul class="bullets">
+              <li>因为这些问题需要定义目标，而不是只执行目标。</li>
+              <li>需要判断哪些错误值得被系统化，哪些只是噪声。</li>
+              <li>需要权衡延迟、成本、可靠性和工程复杂度。</li>
+              <li>需要决定哪些技能自己保留，哪些交给 agent。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="accent-box">
+          <p><strong>0→1 Production Example · DozyTale：</strong></p>
+          <ul class="mini-list">
+            <li><strong>现象</strong>：开发过程中真正卡住进度的，不是“模型能不能再多写一点代码”，而是一些没有标准答案的工程判断。</li>
+            <li><strong>原因</strong>：像“要不要拆短 SSE”“什么时候才该补下一段”“什么体验算通过”这类问题，本质上是延迟、成本、可靠性的取舍，不是模型自己能定义的目标。</li>
+            <li><strong>怎么做</strong>：由人先定义通过标准和系统边界，再让 agent 在这些约束内实现；人的杠杆不在多写一点代码，而在决定什么该被做成 harness。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-n="10">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">收尾</p>
+          <h2 class="title">Harness Engineering 的三个建议</h2>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid-3">
+          <div class="principle">
+            <div class="num">01</div>
+            <h3>先把“失败模式”写进系统</h3>
+            <p>不要只修这一次的输出。把 agent 已经犯过的错误沉淀为 AGENTS.md、协议、脚本或检查项，让系统下次少犯同类错误。</p>
+          </div>
+          <div class="principle">
+            <div class="num">02</div>
+            <h3>优先补 Sensor，再继续改 Prompt</h3>
+            <p>如果 agent 不能在几十秒到几分钟内知道自己有没有做对，那继续调 prompt 的收益通常很有限。先补验证路径，杠杆更高。</p>
+          </div>
+          <div class="principle">
+            <div class="num">03</div>
+            <h3>把 Harness 当长期资产维护</h3>
+            <p>规则文件、脚本、验证路径和 evals 都应当进入版本管理，被持续演化。否则 harness 会和代码库一起漂移，很快失效。</p>
+          </div>
+        </div>
+        <div class="closing-statement" style="max-width:none;">
+          <h2>模型会继续变强，但积累在 harness 里的工程判断力不会被替换。</h2>
+          <p><strong>不要只优化模型回答得好不好，而要优化模型在你的系统里是否能长期、稳定、可验证地工作。</strong> 当产品要把生成、执行、验证和持续迭代连成一个真实系统时，护城河不是 prompt，而是你如何设计让 agent 可靠工作的环境。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <img id="lightbox-img" alt="">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+</div>
+
+<button class="nav prev" onclick="prev()">‹</button>
+<button class="nav next" onclick="next()">›</button>
+<div class="progress" id="prog"></div>
+
+<script>
+let cur = 1;
+const total = 10;
+
+function goTo(n) {
+  n = Math.max(1, Math.min(n, total));
+  const active = document.querySelector(".slide.active");
+  if (active) active.classList.remove("active");
+  const nextSlide = document.querySelector('[data-n="' + n + '"]');
+  if (nextSlide) nextSlide.classList.add("active");
+  cur = n;
+  const prog = document.getElementById("prog");
+  if (prog) prog.style.width = (cur / total * 100) + "%";
+}
+
+function next() { goTo(cur + 1); }
+function prev() { goTo(cur - 1); }
+
+document.addEventListener("keydown", function(e) {
+  if (window.innerWidth <= 900) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
+    e.preventDefault();
+    next();
+  }
+  if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+    e.preventDefault();
+    prev();
+  }
+});
+
+document.getElementById("deck").addEventListener("click", function(e) {
+  if (window.innerWidth <= 900) return;
+  const tag = e.target.tagName.toLowerCase();
+  if (["button", "a", "video", "input", "select", "textarea", "img"].includes(tag)) return;
+  if (e.target.closest("button, a, video, .lightbox, img")) return;
+  if (e.clientX > window.innerWidth / 2) next(); else prev();
+});
+
+let touchX = 0;
+document.addEventListener("touchstart", function(e) {
+  touchX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener("touchend", function(e) {
+  if (window.innerWidth <= 900) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 40) {
+    if (dx < 0) next();
+    else prev();
+  }
+});
+
+document.getElementById("prog").style.width = (1 / total * 100) + "%";
+
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+const lightboxCaption = document.getElementById("lightbox-caption");
+
+document.querySelectorAll(".zoomable").forEach(function(img) {
+  img.addEventListener("click", function(e) {
+    e.stopPropagation();
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt || "";
+    lightboxCaption.textContent = img.alt || "";
+    lightbox.classList.add("open");
+  });
+});
+
+lightbox.addEventListener("click", function() {
+  lightbox.classList.remove("open");
+});
+</script>
+</body>
+</html>
